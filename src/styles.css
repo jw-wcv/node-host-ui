@@ -1,0 +1,32 @@
+body {
+    font-family: 'Roboto', Arial, sans-serif;
+    background-color: #1a1a2e;
+    margin: 0;
+    padding: 0;
+    color: #eaeaea;
+  }
+  
+  .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    background-color: #0f3460;
+    color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .navbar h2 {
+    margin: 0;
+    font-size: 1.5em;
+    font-weight: 600;
+  }
+  
+  .wallet-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  /* More styles below... */
+  

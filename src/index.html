@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Node Hosting Dashboard</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="navbar">
+    <h2>Node Hosting Dashboard</h2>
+    <div class="wallet-info">
+      <span id="walletDisplay">Wallet: Not Connected</span>
+      <span id="balanceDisplay">Balance: 0 ALEPH</span>
+      <button id="connectWalletButton">Connect Wallet</button>
+    </div>
+  </div>
+
+  <div id="dashboard" class="dashboard">
+    <div class="dashboard-header">
+      <h1>Your Nodes</h1>
+      <button class="action-button" onclick="createNode()">+ Create New Node</button>
+    </div>
+    <div class="grid-container" id="nodeGrid"></div>
+    <div class="grid-container">
+      <div class="card">
+        <h3>Resource Usage</h3>
+        <p>Total CPU: <strong>2 vCPUs</strong></p>
+        <p>Total Memory: <strong>4 GB</strong></p>
+      </div>
+      <div class="card">
+        <h3>Billing Information</h3>
+        <p>Current Month: <strong>50 ALEPH</strong></p>
+        <p>Total Usage: <strong>200 ALEPH</strong></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    If you have issues, please <a href="#">contact support</a>.
+  </div>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
