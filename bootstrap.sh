@@ -12,7 +12,7 @@ apt update -y
 
 # Install prerequisites
 echo "Installing prerequisites..."
-apt install -y curl gnupg apt-transport-https
+apt install -y curl gnupg apt-transport-https lsof
 
 # Add Node.js repository and install Node.js
 echo "Installing Node.js..."
@@ -49,7 +49,7 @@ else
 fi
 
 # Stop and delete any existing PM2 process for the server
-PM2_APP_NAME="wallet-connect-server"
+PM2_APP_NAME="aleph-node-app"
 echo "Stopping existing PM2 processes for '$PM2_APP_NAME'..."
 pm2 delete "$PM2_APP_NAME" 2>/dev/null || echo "No existing PM2 process found for '$PM2_APP_NAME'."
 
