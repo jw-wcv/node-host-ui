@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Constants
-const PUBLIC_DIR = path.join(__dirname, 'src'); // Updated to serve files from the "src" directory
+const PUBLIC_DIR = path.join(__dirname, 'src'); // Updated to point to "src" directory
 const PORT = 8080;
 
 // Define the request handler
