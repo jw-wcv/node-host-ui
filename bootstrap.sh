@@ -65,6 +65,14 @@ else
   echo "package.json not found in $PROJECT_DIR. Skipping dependency installation."
 fi
 
+# Install Webpack and Babel dependencies
+echo "Installing Webpack and Babel dependencies..."
+npm install --save-dev webpack webpack-cli babel-loader @babel/core @babel/preset-env || { echo "Failed to install Webpack and Babel dependencies. Exiting."; exit 1; }
+
+# Build the project
+echo "Building the project..."
+npm run build || { echo "Failed to build the project. Exiting."; exit 1; }
+
 # Start the Node.js server using PM2
 echo "Starting the Node.js server using PM2..."
 pm2 start server.js --name "$PM2_APP_NAME" || { echo "Failed to start server using PM2. Exiting."; exit 1; }
