@@ -65,9 +65,13 @@ else
   echo "package.json not found in $PROJECT_DIR. Skipping dependency installation."
 fi
 
-# Install Webpack and Babel dependencies
-echo "Installing Webpack and Babel dependencies..."
-npm install --save-dev webpack webpack-cli babel-loader @babel/core @babel/preset-env || { echo "Failed to install Webpack and Babel dependencies. Exiting."; exit 1; }
+# Install Webpack, Babel, and required polyfills
+echo "Installing Webpack, Babel, and polyfill dependencies..."
+npm install --save-dev webpack webpack-cli babel-loader @babel/core @babel/preset-env buffer crypto-browserify stream-browserify stream-http https-browserify browserify-zlib util url || { echo "Failed to install Webpack and polyfill dependencies. Exiting."; exit 1; }
+
+# Install Aleph SDK dependencies
+echo "Installing Aleph SDK dependencies..."
+npm install @aleph-sdk/account @aleph-sdk/client @aleph-sdk/core @aleph-sdk/ethereum @aleph-sdk/evm @aleph-sdk/message || { echo "Failed to install Aleph SDK dependencies. Exiting."; exit 1; }
 
 # Build the project
 echo "Building the project..."

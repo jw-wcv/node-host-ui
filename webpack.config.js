@@ -1,14 +1,24 @@
 const path = require('path');
 
 module.exports = {
-  entry: './src/app.js', // Path to your main JS file
+  entry: './src/app.js',
   output: {
     filename: 'bundle.js',
     path: path.resolve(__dirname, 'dist'),
   },
-  mode: 'development', // Change to 'production' for optimized builds
+  mode: 'development',
   resolve: {
     extensions: ['.js'],
+    fallback: {
+      buffer: require.resolve('buffer/'),
+      crypto: require.resolve('crypto-browserify'),
+      stream: require.resolve('stream-browserify'),
+      http: require.resolve('stream-http'),
+      https: require.resolve('https-browserify'),
+      zlib: require.resolve('browserify-zlib'),
+      util: require.resolve('util/'),
+      url: require.resolve('url/'),
+    },
   },
   module: {
     rules: [
@@ -21,7 +31,7 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        use: ['style-loader', 'css-loader'], // Load and bundle CSS files
+        use: ['style-loader', 'css-loader'],
       },
     ],
   },
