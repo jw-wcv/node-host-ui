@@ -1,6 +1,5 @@
 // Import dependencies
 import { AuthenticatedAlephHttpClient } from '@aleph-sdk/client';
-import { Web3Account } from '@aleph-sdk/account';
 import { ethers } from 'ethers';
 
 const walletDisplay = document.getElementById('walletDisplay');
@@ -9,7 +8,6 @@ const connectWalletButton = document.getElementById('connectWalletButton');
 const nodeGrid = document.getElementById('nodeGrid');
 
 let alephClient;
-let alephAccount;
 
 const alephChannel = "ALEPH-CLOUDSOLUTIONS";
 const alephNodeUrl = "https://46.255.204.193";
@@ -24,16 +22,14 @@ async function connectWallet() {
   await provider.send('eth_requestAccounts', []);
   const signer = provider.getSigner();
   const address = await signer.getAddress();
-  const client = new AuthenticatedAlephHttpClient(alephAccount);
 
   try {
-    alephAccount = new Web3Account({
-      address,
-      sign: async (msg) => await signer.signMessage(msg),
-    });
-
+    // Directly use the signer and address with the Aleph client
     alephClient = new AuthenticatedAlephHttpClient({
-      account: alephAccount,
+      account: {
+        address,
+        sign: async (msg) => await signer.signMessage(msg),
+      },
       node_url: alephNodeUrl,
     });
 
@@ -69,7 +65,7 @@ async function listInstances() {
 
   const response = await alephClient.getMessages({
     types: ['INSTANCE'],
-    addresses: [alephAccount.address],
+    addresses: [alephClient.account.address],
   });
 
   nodeGrid.innerHTML = '';
