@@ -68,6 +68,8 @@ async function listInstances() {
   
     try {
       console.log("Fetching instances...");
+      console.log("Fetching instances...: " + alephClient.account);
+      console.log("Fetching instances...: " + alephClient.account.address);
       const response = await alephClient.getMessages({
         types: ['INSTANCE'],
         addresses: [alephClient.account.address],
