@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Node Hosting Dashboard</title>
+  <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
   <div class="navbar">
@@ -18,19 +19,23 @@
   <div id="dashboard" class="dashboard">
     <div class="dashboard-header">
       <h1>Your Nodes</h1>
-      <button class="action-button" onclick="createNode()">+ Create New Node</button>
+      <button class="action-button" onclick="createInstance()">+ Create New Node</button>
     </div>
+
+    <!-- Node Grid -->
     <div class="grid-container" id="nodeGrid"></div>
+
+    <!-- Resource and Billing Information -->
     <div class="grid-container">
       <div class="card">
         <h3>Resource Usage</h3>
-        <p>Total CPU: <strong>2 vCPUs</strong></p>
-        <p>Total Memory: <strong>4 GB</strong></p>
+        <p>Total CPU: <strong id="totalCpu">0 vCPUs</strong></p>
+        <p>Total Memory: <strong id="totalMemory">0 GB</strong></p>
       </div>
       <div class="card">
         <h3>Billing Information</h3>
-        <p>Current Month: <strong>50 ALEPH</strong></p>
-        <p>Total Usage: <strong>200 ALEPH</strong></p>
+        <p>Current Month: <strong id="currentMonth">0 ALEPH</strong></p>
+        <p>Total Usage: <strong id="totalUsage">0 ALEPH</strong></p>
       </div>
     </div>
   </div>

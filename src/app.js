@@ -3,7 +3,6 @@ import { AuthenticatedAlephHttpClient } from '@aleph-sdk/client';
 import { ethers } from 'ethers';
 import './styles.css';
 
-
 const walletDisplay = document.getElementById('walletDisplay');
 const balanceDisplay = document.getElementById('balanceDisplay');
 const connectWalletButton = document.getElementById('connectWalletButton');
@@ -26,7 +25,6 @@ async function connectWallet() {
   const address = await signer.getAddress();
 
   try {
-    // Directly use the signer and address with the Aleph client
     alephClient = new AuthenticatedAlephHttpClient({
       account: {
         address,
@@ -104,6 +102,42 @@ function renderNode(node) {
   nodeGrid.appendChild(card);
 }
 
+async function createInstance() {
+  const sshKey = prompt("Enter SSH Key:");
+  if (!sshKey) return;
+
+  try {
+    const instance = await alephClient.createInstance({
+      authorized_keys: [sshKey],
+      resources: { vcpus: 2, memory: 2048, seconds: 3600 },
+      payment: { chain: "ETH", type: "hold" },
+      channel: alephChannel,
+      image: "4a0f62da42f4478544616519e6f5d58adb1096e069b392b151d47c3609492d0c",
+      environment: {},
+    });
+
+    alert(`Instance ${instance.item_hash} created successfully!`);
+    await listInstances();
+  } catch (error) {
+    console.error("Error creating instance:", error);
+  }
+}
+
+async function deleteNode(instanceId) {
+  try {
+    await alephClient.forget({
+      hashes: [instanceId],
+      reason: "User requested teardown",
+      channel: alephChannel,
+    });
+
+    alert(`Instance ${instanceId} deleted successfully!`);
+    await listInstances();
+  } catch (error) {
+    console.error("Error deleting instance:", error);
+  }
+}
+
 function disconnectWallet() {
   walletDisplay.textContent = 'Wallet: Not Connected';
   balanceDisplay.textContent = 'Balance: 0 ALEPH';
@@ -113,3 +147,5 @@ function disconnectWallet() {
 }
 
 connectWalletButton.addEventListener('click', connectWallet);
+
+document.querySelector('.action-button').addEventListener('click', createInstance);
