@@ -129,6 +129,16 @@ body {
     background-color: #3282b8;
   }
 
+  .node-id {
+    word-wrap: break-word; /* Wrap long words to the next line */
+    overflow: hidden;      /* Hide overflowing text */
+    text-overflow: ellipsis; /* Add ellipsis to truncated text */
+    white-space: nowrap;    /* Prevent wrapping to the next line */
+    max-width: 100%;        /* Ensure it stays within the container */
+    display: block;         /* Ensure block layout for consistency */
+  }
+  
+
   .footer {
     margin-top: 50px;
     text-align: center;

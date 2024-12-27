@@ -145,20 +145,21 @@ async function listInstances() {
   }
   
 
-function renderNode(node) {
-  const card = document.createElement('div');
-  card.className = 'card';
-  card.innerHTML = `
-    <h3>${node.id}</h3>
-    <p><strong>IPv6:</strong> ${node.ipv6}</p>
-    <p><strong>Status:</strong> ${node.status}</p>
-    <p><strong>Uptime:</strong> ${node.uptime}</p>
-    <div class="card-actions">
-      <button onclick="deleteNode('${node.id}')">Delete</button>
-    </div>
-  `;
-  nodeGrid.appendChild(card);
-}
+  function renderNode(node) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <h3 class="node-id">${node.id}</h3>
+      <p><strong>IPv6:</strong> ${node.ipv6}</p>
+      <p><strong>Status:</strong> ${node.status}</p>
+      <p><strong>Uptime:</strong> ${node.uptime}</p>
+      <div class="card-actions">
+        <button onclick="deleteNode('${node.id}')">Delete</button>
+      </div>
+    `;
+    nodeGrid.appendChild(card);
+  }
+  
 
 async function createInstance() {
   const sshKey = prompt("Enter SSH Key:");
