@@ -5,7 +5,7 @@ body {
     padding: 0;
     color: #eaeaea;
   }
-  
+
   .navbar {
     display: flex;
     justify-content: space-between;
@@ -14,19 +14,133 @@ body {
     background-color: #0f3460;
     color: white;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 10;
   }
-  
+
   .navbar h2 {
     margin: 0;
     font-size: 1.5em;
     font-weight: 600;
   }
-  
+
   .wallet-info {
     display: flex;
     align-items: center;
     gap: 15px;
   }
-  
-  /* More styles below... */
-  
+
+  .wallet-info button {
+    background-color: #e94560;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+  }
+
+  .wallet-info button:hover {
+    background-color: #ff5c7a;
+  }
+
+  .dashboard {
+    max-width: 1400px;
+    margin: 30px auto;
+    padding: 20px;
+    background-color: #16213e;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+  }
+
+  .dashboard-header h1 {
+    font-size: 1.8em;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .action-button {
+    background-color: #e94560;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 0.9em;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  .action-button:hover {
+    background-color: #ff5c7a;
+  }
+
+  .grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    padding-bottom: 30px;
+  }
+
+  .card {
+    background-color: #1a1a2e;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .card h3 {
+    margin: 0 0 15px;
+    font-size: 1.2em;
+    font-weight: 600;
+  }
+
+  .card p {
+    margin: 5px 0;
+    font-size: 0.9em;
+    color: #c1c1c1;
+  }
+
+  .card-actions {
+    margin-top: 15px;
+  }
+
+  .card-actions button {
+    background-color: #0f3460;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.9em;
+    cursor: pointer;
+    margin-right: 10px;
+    transition: background-color 0.3s ease;
+  }
+
+  .card-actions button:hover {
+    background-color: #3282b8;
+  }
+
+  .footer {
+    margin-top: 50px;
+    text-align: center;
+    font-size: 0.8em;
+    color: #7a7a7a;
+  }
+
+  .footer a {
+    color: #e94560;
+    text-decoration: none;
+  }
+
+  .footer a:hover {
+    text-decoration: underline;
+  }
