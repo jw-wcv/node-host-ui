@@ -1,6 +1,6 @@
 // Import dependencies
 import { AuthenticatedAlephHttpClient } from '@aleph-sdk/client';
-import { Web3Account } from '@aleph-sdk/accounts';
+import { Web3Account } from '@aleph-sdk/account';
 import { ethers } from 'ethers';
 
 const walletDisplay = document.getElementById('walletDisplay');
@@ -24,6 +24,7 @@ async function connectWallet() {
   await provider.send('eth_requestAccounts', []);
   const signer = provider.getSigner();
   const address = await signer.getAddress();
+  const client = new AuthenticatedAlephHttpClient(alephAccount);
 
   try {
     alephAccount = new Web3Account({
