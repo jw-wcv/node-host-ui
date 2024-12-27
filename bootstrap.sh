@@ -67,7 +67,7 @@ fi
 
 # Install Webpack, Babel, and required polyfills
 echo "Installing Webpack, Babel, and polyfill dependencies..."
-npm install --save-dev webpack webpack-cli babel-loader @babel/core @babel/preset-env buffer crypto-browserify stream-browserify stream-http https-browserify browserify-zlib util url || { echo "Failed to install Webpack and polyfill dependencies. Exiting."; exit 1; }
+npm install --save-dev webpack webpack-cli babel-loader @babel/core @babel/preset-env buffer crypto-browserify stream-browserify stream-http https-browserify browserify-zlib util url assert decimal.js || { echo "Failed to install Webpack and polyfill dependencies. Exiting."; exit 1; }
 
 # Install Aleph SDK dependencies
 echo "Installing Aleph SDK dependencies..."
