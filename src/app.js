@@ -68,9 +68,15 @@ async function listInstances() {
   
     try {
       console.log("Fetching instances...");
-      console.log("Fetching instances...: " + alephClient);
-      console.log("Fetching instances...: " + alephClient.account);
-      console.log("Fetching instances...: " + alephClient.account.address);
+      console.log("Aleph Client Object:");
+      console.dir(alephClient);
+
+      console.log("Aleph Client Object:", JSON.stringify(alephClient, null, 2));
+      if (alephClient && alephClient.account) {
+        console.log("Aleph Client Account Object:", JSON.stringify(alephClient.account, null, 2));
+        console.log("Aleph Client Wallet Address:", alephClient.account.address || "Address is undefined");
+      }
+
       const response = await alephClient.getMessages({
         types: ['INSTANCE'],
         addresses: [alephClient.account.address],
