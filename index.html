@@ -3,121 +3,199 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Web3 Wallet Connect</title>
+  <title>Node Hosting Dashboard</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       background-color: #f4f4f9;
-      color: #333;
       margin: 0;
       padding: 0;
+    }
+
+    .navbar {
       display: flex;
-      justify-content: center;
+      justify-content: space-between;
       align-items: center;
-      min-height: 100vh;
+      padding: 15px 30px;
+      background-color: #007bff;
+      color: white;
     }
-    #root {
-      width: 100%;
-      max-width: 400px;
-      padding: 20px;
-      background: white;
-      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-      border-radius: 8px;
-      text-align: center;
+
+    .navbar .wallet-info {
+      display: flex;
+      align-items: center;
+      gap: 20px;
     }
-    button {
+
+    .content {
+      padding: 20px 30px;
+    }
+
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .dashboard-header h1 {
+      margin: 0;
+    }
+
+    .action-button {
       background-color: #007bff;
       color: white;
       border: none;
       padding: 10px 20px;
-      font-size: 16px;
       border-radius: 5px;
+      font-size: 16px;
       cursor: pointer;
       transition: background-color 0.3s ease;
-      margin: 10px;
     }
-    button:hover {
+
+    .action-button:hover {
       background-color: #0056b3;
     }
-    .status-success {
-      color: green;
+
+    .node-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
     }
-    .status-error {
-      color: red;
+
+    .node-card {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .node-card h3 {
+      margin: 0 0 10px;
+    }
+
+    .node-card p {
+      margin: 5px 0;
+      font-size: 14px;
+    }
+
+    .node-card .card-actions {
+      margin-top: 10px;
+    }
+
+    .node-card .card-actions button {
+      margin-right: 10px;
     }
   </style>
 </head>
 <body>
-  <div id="root">
-    <h1>Connect Your Wallet</h1>
-    <p id="status">Status: Not connected</p>
-    <button id="connectButton">Connect Wallet</button>
-    <div id="walletInfo" style="display: none;">
-      <p><strong>Address:</strong> <span id="walletAddress"></span></p>
-      <p><strong>Balance:</strong> <span id="walletBalance">0 ETH</span></p>
+  <div class="navbar">
+    <h2>Node Hosting Dashboard</h2>
+    <div class="wallet-info">
+      <span id="walletAddress">Wallet: Not connected</span>
+      <span id="walletBalance">Balance: 0 ALEPH</span>
     </div>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
+
+  <div class="content">
+    <div class="dashboard-header">
+      <h1>Your Nodes</h1>
+      <button class="action-button" onclick="createNode()">+ Create New Node</button>
+    </div>
+
+    <div id="nodeGrid" class="node-grid">
+      <!-- Dynamic Node Cards -->
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.0/dist/ethers.umd.min.js"></script>
   <script>
-    const connectButton = document.getElementById("connectButton");
-    const status = document.getElementById("status");
-    const walletInfo = document.getElementById("walletInfo");
-    const walletAddress = document.getElementById("walletAddress");
-    const walletBalance = document.getElementById("walletBalance");
+    const walletAddressElem = document.getElementById("walletAddress");
+    const walletBalanceElem = document.getElementById("walletBalance");
+    const nodeGrid = document.getElementById("nodeGrid");
+
     const tokenAddress = "0x27702a26126e0B3702af63Ee09aC4d1A084EF628";
     const tokenABI = [
       "function balanceOf(address owner) view returns (uint256)",
       "function decimals() view returns (uint8)"
     ];
 
-    // Fetch token balance
     async function fetchTokenBalance(provider, address) {
       try {
         const contract = new ethers.Contract(tokenAddress, tokenABI, provider);
         const balance = await contract.balanceOf(address);
         const decimals = await contract.decimals();
         return ethers.utils.formatUnits(balance, decimals);
-      } catch (err) {
-        console.error("Error fetching token balance:", err);
-        return "0"; // Default to 0 if there's an error
+      } catch (error) {
+        console.error("Error fetching token balance:", error);
+        return "0";
       }
     }
 
-    // Initialize Web3 functionality
     async function connectWallet() {
-      try {
-        status.textContent = "Connecting...";
-        status.className = "";
-
-        if (!window.ethereum) {
-          alert("MetaMask is not installed. Please install it to use this app.");
-          return;
-        }
-
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        await provider.send("eth_requestAccounts", []);
-        const signer = provider.getSigner();
-        const address = await signer.getAddress();
-        const ethBalance = await provider.getBalance(address);
-        const formattedEthBalance = ethers.utils.formatEther(ethBalance);
-
-        // Fetch token balance
-        const tokenBalance = await fetchTokenBalance(provider, address);
-
-        // Display wallet details
-        walletInfo.style.display = "block";
-        walletAddress.textContent = address;
-        walletBalance.textContent = `${formattedEthBalance} ETH (${tokenBalance} Tokens)`;
-        status.textContent = "Status: Connected";
-        status.className = "status-success";
-      } catch (err) {
-        console.error(err);
-        status.textContent = "Status: Failed to connect";
-        status.className = "status-error";
+      if (!window.ethereum) {
+        alert("MetaMask is not installed. Please install it to use this app.");
+        return;
       }
+
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
+      const signer = provider.getSigner();
+      const address = await signer.getAddress();
+
+      const tokenBalance = await fetchTokenBalance(provider, address);
+
+      walletAddressElem.textContent = `Wallet: ${address}`;
+      walletBalanceElem.textContent = `Balance: ${tokenBalance} ALEPH`;
     }
 
-    connectButton.addEventListener("click", connectWallet);
+    function renderNodeCard(node) {
+      const card = document.createElement("div");
+      card.className = "node-card";
+      card.innerHTML = `
+        <h3>Node: ${node.id}</h3>
+        <p><strong>IPv6:</strong> ${node.ipv6}</p>
+        <p><strong>Status:</strong> ${node.status}</p>
+        <p><strong>Uptime:</strong> ${node.uptime}</p>
+        <div class="card-actions">
+          <button class="action-button" onclick="checkNodeStatus('${node.id}')">Check Status</button>
+          <button class="action-button" onclick="sshIntoNode('${node.ipv6}')">SSH</button>
+        </div>
+      `;
+      nodeGrid.appendChild(card);
+    }
+
+    function createNode() {
+      const newNode = {
+        id: `Node-${Math.floor(Math.random() * 1000)}`,
+        ipv6: `2607:f8b0:4005:805::${Math.floor(Math.random() * 100)}`,
+        status: "Initializing...",
+        uptime: "0h 0m"
+      };
+      renderNodeCard(newNode);
+    }
+
+    function checkNodeStatus(nodeId) {
+      alert(`Checking status for ${nodeId}`);
+      // Use an API call to check the status
+    }
+
+    function sshIntoNode(ipv6) {
+      alert(`Connecting via SSH to ${ipv6}`);
+      // SSH implementation goes here
+    }
+
+    // Simulate some initial nodes
+    const initialNodes = [
+      { id: "d10a48b1", ipv6: "2607:f8b0:4005:805::abcd", status: "Running", uptime: "8h 42m" },
+      { id: "a20b39c2", ipv6: "2607:f8b0:4005:805::1234", status: "Stopped", uptime: "5h 20m" }
+    ];
+
+    // Render initial nodes
+    initialNodes.forEach(renderNodeCard);
+
+    // Auto-connect wallet on load
+    connectWallet();
   </script>
 </body>
 </html>

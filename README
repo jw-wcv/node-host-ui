@@ -1,0 +1,212 @@
+
+# Gala Node Setup and Status Server
+
+This repository provides scripts to:
+
+1. Set up the Gala Node software on an Ubuntu Linux VM.
+2. Run an HTTP server to manage and monitor the Gala Node's configuration and status.
+
+---
+
+## Files
+
+- **`setup_gala_node.sh`**: Script to install and configure the Gala Node software.
+- **`server.js`**: Node.js script to run an HTTP server for status, configuration, and server management.
+- **`bootstrap.sh`**: Script to automate installation of prerequisites, Node.js, PM2, and the HTTP server setup.
+
+---
+
+## Installation and Setup
+
+### Prerequisites
+
+- Ubuntu Linux VM
+- Basic command-line tools (`git`, `curl`, etc.)
+
+### Steps to Set Up
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/jw-wcv/gala-node-setup.git
+   cd gala-node-setup
+   ```
+
+2. Make the `bootstrap.sh` script executable:
+   ```bash
+   chmod +x bootstrap.sh
+   ```
+
+3. Run the bootstrap script:
+   ```bash
+   ./bootstrap.sh
+   ```
+
+The script will:
+- Install Node.js, npm, and PM2.
+- Clone and set up the repository.
+- Start the HTTP server using PM2 for process management.
+
+---
+
+## API Endpoints
+
+The server runs on port `8080` and supports the following endpoints:
+
+### **GET `/status`**
+Retrieve the current status of the Gala Node.
+
+**Example Request:**
+```bash
+curl -X GET http://[::1]:8080/status
+```
+
+**Example Response:**
+```json
+{
+    "status": "success",
+    "details": "Node ID: 4854824243d641cbbc670a7108a2499b\nGala Node is running\n..."
+}
+```
+
+---
+
+### **POST `/configure`**
+Configure the Gala Node with an API key.
+
+**Payload Example:**
+```json
+{
+    "api_key": "your_api_key_here"
+}
+```
+
+**Example Request:**
+```bash
+curl -X POST http://[::1]:8080/configure \
+-H "Content-Type: application/json" \
+-d '{"api_key": "your_api_key_here"}'
+```
+
+**Example Response:**
+```json
+{
+    "status": "success",
+    "message": "Gala Node configured and started."
+}
+```
+
+---
+
+### **PATCH `/restart`**
+Restart the server using PM2.
+
+**Example Request:**
+```bash
+curl -X PATCH http://[::1]:8080/restart
+```
+
+**Example Response:**
+```json
+{
+    "status": "success",
+    "message": "Server restarted successfully."
+}
+```
+
+---
+
+## Postman Collection
+
+Below is the Postman collection to interact with the API:
+
+```json
+{
+	"info": {
+		"_postman_id": "c75598c1-657d-4d36-8afa-3ea2ca5d5a94",
+		"name": "GNode",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "22307025"
+	},
+	"item": [
+		{
+			"name": "Configure",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"api_key\": \"your_api_key_here\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://[::1]:8080/configure",
+					"protocol": "http",
+					"host": [
+						"[::1]"
+					],
+					"port": "8080",
+					"path": [
+						"configure"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Restart",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"url": {
+					"raw": "http://[::1]:8080/restart",
+					"protocol": "http",
+					"host": [
+						"[::1]"
+					],
+					"port": "8080",
+					"path": [
+						"restart"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Status",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://[::1]:8080/status",
+					"protocol": "http",
+					"host": [
+						"[::1]"
+					],
+					"port": "8080",
+					"path": [
+						"status"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
+```
+
+To import the collection into Postman:
+1. Copy the above JSON.
+2. Open Postman and click on **Import**.
+3. Paste the JSON into the import window and click **Continue**.
+
+---
+
+## Additional Notes
+
+- The `setup_gala_node.sh` script requires an API key to configure the Gala Node.
+- The server uses PM2 for process management and is configured to restart on system reboot.
+- Make sure to replace placeholder values (e.g., `your_api_key_here`) with actual data.
