@@ -1,6 +1,8 @@
 // Import dependencies
 import { AuthenticatedAlephHttpClient } from '@aleph-sdk/client';
 import { ethers } from 'ethers';
+import './styles.css';
+
 
 const walletDisplay = document.getElementById('walletDisplay');
 const balanceDisplay = document.getElementById('balanceDisplay');

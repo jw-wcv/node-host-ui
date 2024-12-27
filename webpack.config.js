@@ -26,6 +26,7 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './src/index.html', // Use your source index.html
       filename: 'index.html', // Output to dist/index.html
+      inject: 'body', // Ensure scripts are loaded in the body
     }),
   ],
   module: {
