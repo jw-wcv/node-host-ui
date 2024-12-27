@@ -62,55 +62,67 @@ async function fetchTokenBalance(provider, address) {
 
 async function listInstances() {
     if (!alephClient) {
-      console.error("Aleph client not initialized.");
-      return;
-    }
-  
-    try {
-      console.log("Fetching instances...");
-      console.log("Aleph Client Object:");
-      console.dir(alephClient);
-
-      console.log("Aleph Client Object:", JSON.stringify(alephClient, null, 2));
-      if (alephClient && alephClient.account) {
-        console.log("Aleph Client Account Object:", JSON.stringify(alephClient.account, null, 2));
-        console.log("Aleph Client Wallet Address:", alephClient.account.address || "Address is undefined");
-      }
-
-      const response = await alephClient.getMessages({
-        types: ['INSTANCE'],
-        addresses: [alephClient.account.address],
-      });
-  
-      console.log("Raw response from Aleph:", response);
-  
-      // Clear the node grid
-      nodeGrid.innerHTML = '';
-  
-      // Check if no instances are returned
-      if (!response.messages || response.messages.length === 0) {
-        nodeGrid.innerHTML = '<p>No instances found for this wallet.</p>';
+        console.error("Aleph client not initialized.");
         return;
-      }
-  
-      // Iterate over the instances and render them
-      for (const message of response.messages) {
-        const instanceId = message.item_hash;
-        const ipv6 = await fetchInstanceIp(instanceId);
-        console.log(`Instance ID: ${instanceId}, IPv6: ${ipv6}`);
-  
-        renderNode({
-          id: instanceId,
-          ipv6: ipv6 || 'Unavailable',
-          status: message.confirmed ? 'Running' : 'Pending',
-          uptime: '0h 0m',
-        });
-      }
-    } catch (error) {
-      console.error("Error fetching instances:", error);
-      nodeGrid.innerHTML = '<p>Error loading instances. Please try again later.</p>';
     }
-  }
+
+    try {
+        console.log("Fetching instances...");
+        console.log("Aleph Client Object:");
+        console.dir(alephClient);
+
+        // Log the correct account details
+        if (alephClient && alephClient.account) {
+            console.log("Aleph Client Account Object:", JSON.stringify(alephClient.account, null, 2));
+
+            // Extract and log the correct wallet address
+            const walletAddress = alephClient.account.account?.address;
+            if (walletAddress) {
+                console.log("Aleph Client Wallet Address:", walletAddress);
+            } else {
+                console.warn("Wallet address is undefined.");
+                return;
+            }
+
+            // Fetch messages using the correct wallet address
+            const response = await alephClient.getMessages({
+                types: ['INSTANCE'],
+                addresses: [walletAddress], // Use the correct variable
+            });
+
+            console.log("Raw response from Aleph:", response);
+
+            // Clear the node grid
+            nodeGrid.innerHTML = '';
+
+            // Check if no instances are returned
+            if (!response.messages || response.messages.length === 0) {
+                nodeGrid.innerHTML = '<p>No instances found for this wallet.</p>';
+                return;
+            }
+
+            // Iterate over the instances and render them
+            for (const message of response.messages) {
+                const instanceId = message.item_hash;
+                const ipv6 = await fetchInstanceIp(instanceId);
+                console.log(`Instance ID: ${instanceId}, IPv6: ${ipv6}`);
+
+                renderNode({
+                    id: instanceId,
+                    ipv6: ipv6 || 'Unavailable',
+                    status: message.confirmed ? 'Running' : 'Pending',
+                    uptime: '0h 0m',
+                });
+            }
+        } else {
+            console.error("Aleph Client Account is not properly initialized.");
+        }
+    } catch (error) {
+        console.error("Error fetching instances:", error);
+        nodeGrid.innerHTML = '<p>Error loading instances. Please try again later.</p>';
+    }
+}
+
   
   
 
