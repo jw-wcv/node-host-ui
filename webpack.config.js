@@ -1,4 +1,5 @@
 const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   entry: './src/app.js', // Path to your main JS file
@@ -21,6 +22,12 @@ module.exports = {
       url: require.resolve('url/'),
     },
   },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: './src/index.html', // Use your source index.html
+      filename: 'index.html', // Output to dist/index.html
+    }),
+  ],
   module: {
     rules: [
       {

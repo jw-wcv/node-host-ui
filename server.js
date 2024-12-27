@@ -3,8 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Constants
-// const PUBLIC_DIR = path.join(__dirname, 'src'); // Updated to point to "src" directory
-const PUBLIC_DIR = path.join(__dirname, 'dist'); // Updated to use the dist directory for webpack
+const PUBLIC_DIR = path.join(__dirname, 'dist'); // Points to the dist directory
 const PORT = 8080;
 
 // Define the request handler
