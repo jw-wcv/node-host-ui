@@ -100,14 +100,14 @@
   <div class="content">
     <div class="dashboard-header">
       <h1>Your Nodes</h1>
-      <button class="action-button" onclick="createNode()">+ Create New Node</button>
+      <button class="action-button" onclick="createInstance()">+ Create New Node</button>
     </div>
 
     <div id="nodeGrid" class="node-grid">
       <!-- Dynamic Node Cards -->
     </div>
   </div>
-
+  <script src="https://cdn.jsdelivr.net/npm/node-forge/dist/forge.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.0/dist/ethers.umd.min.js"></script>
   <script>
     const walletAddressElem = document.getElementById("walletAddress");
@@ -119,6 +119,10 @@
       "function balanceOf(address owner) view returns (uint256)",
       "function decimals() view returns (uint8)"
     ];
+
+    let alephClient;
+    let connectedWalletAddress;
+    let sshPublicKey;
 
     async function fetchTokenBalance(provider, address) {
       try {
@@ -141,61 +145,199 @@
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       await provider.send("eth_requestAccounts", []);
       const signer = provider.getSigner();
-      const address = await signer.getAddress();
+      connectedWalletAddress = await signer.getAddress();
 
-      const tokenBalance = await fetchTokenBalance(provider, address);
+      const tokenBalance = await fetchTokenBalance(provider, connectedWalletAddress);
 
-      walletAddressElem.textContent = `Wallet: ${address}`;
+      walletAddressElem.textContent = `Wallet: ${connectedWalletAddress}`;
       walletBalanceElem.textContent = `Balance: ${tokenBalance} ALEPH`;
+
+      alephClient = {
+        signer,
+        async createInstance(params) {
+          console.log("Instance parameters:", params);
+          return { item_hash: `Node-${Math.random().toString(36).substring(2)}` };
+        },
+        async getMessages(filters) {
+          console.log("Fetching messages with filters:", filters);
+          return {
+            messages: [
+              { item_hash: "Node-1", time: Date.now() / 1000 - 3600 },
+              { item_hash: "Node-2", time: Date.now() / 1000 - 7200 },
+            ],
+          };
+        },
+        async forget(params) {
+          console.log("Forgetting instance:", params.hashes);
+          return { success: true };
+        },
+      };
+    }
+
+    async function generateSSHKey() {
+        try {
+          const forge = window.forge;
+    
+          // Generate a 2048-bit RSA key pair
+          const keypair = forge.pki.rsa.generateKeyPair({ bits: 2048 });
+    
+          // Convert the public key to OpenSSH format
+          const sshPublicKey = forge.ssh.publicKeyToOpenSSH(keypair.publicKey, "generated-key");
+          const sshPrivateKey = forge.pki.privateKeyToPem(keypair.privateKey);
+    
+          // Log the keys (private key should only be stored securely or used directly in memory)
+          console.log("Generated SSH Public Key:", sshPublicKey);
+    
+          // Use the public key in instance creation
+          window.sshPublicKey = sshPublicKey;
+        } catch (error) {
+          console.error("Error generating SSH key:", error);
+        }
+      }
+
+    async function createInstance() {
+      if (!alephClient || !sshPublicKey) {
+        alert("Please connect your wallet and generate an SSH key first.");
+        return;
+      }
+
+      try {
+        const instance = await alephClient.createInstance({
+          authorized_keys: [sshPublicKey],
+          resources: { vcpus: 1, memory: 2000, seconds: 3600 },
+          payment: { chain: "ETH", type: "hold" },
+          channel: "ALEPH-CLOUDSOLUTIONS",
+          image: "4a0f62da42f4478544616519e6f5d58adb1096e069b392b151d47c3609492d0c",
+          environment: {},
+        });
+
+        const ipv6 = await fetchInstanceIp(instance.item_hash);
+        renderNodeCard({
+          id: instance.item_hash,
+          ipv6,
+          status: "Running",
+          uptime: "0h 0m",
+        });
+      } catch (error) {
+        console.error("Error creating instance:", error);
+      }
+    }
+
+    async function tearDownInstance(instanceId) {
+      try {
+        console.log(`Deleting instance ${instanceId}`);
+        await alephClient.forget({ hashes: [instanceId] });
+        document.getElementById(instanceId).remove();
+        console.log(`Instance ${instanceId} deleted successfully.`);
+      } catch (error) {
+        console.error(`Error deleting instance ${instanceId}:`, error.message);
+      }
+    }
+
+    async function fetchInstanceIp(itemHash) {
+      try {
+        const response = await fetch(`https://scheduler.api.aleph.cloud/api/v0/allocation/${itemHash}`);
+        const data = await response.json();
+        return data.vm_ipv6 || "Unavailable";
+      } catch (error) {
+        console.error("Error fetching IPv6:", error);
+        return "Unavailable";
+      }
     }
 
     function renderNodeCard(node) {
       const card = document.createElement("div");
       card.className = "node-card";
+      card.id = node.id;
       card.innerHTML = `
         <h3>Node: ${node.id}</h3>
         <p><strong>IPv6:</strong> ${node.ipv6}</p>
         <p><strong>Status:</strong> ${node.status}</p>
         <p><strong>Uptime:</strong> ${node.uptime}</p>
         <div class="card-actions">
-          <button class="action-button" onclick="checkNodeStatus('${node.id}')">Check Status</button>
-          <button class="action-button" onclick="sshIntoNode('${node.ipv6}')">SSH</button>
+          <button class="action-button" onclick="getLogs('${node.id}')">Get Logs</button>
+          <button class="action-button" onclick="tearDownInstance('${node.id}')">Delete</button>
         </div>
       `;
       nodeGrid.appendChild(card);
     }
 
-    function createNode() {
-      const newNode = {
-        id: `Node-${Math.floor(Math.random() * 1000)}`,
-        ipv6: `2607:f8b0:4005:805::${Math.floor(Math.random() * 100)}`,
-        status: "Initializing...",
-        uptime: "0h 0m"
-      };
-      renderNodeCard(newNode);
+    async function listInstances() {
+        if (!alephClient) {
+          alert("Please connect your wallet first.");
+          return;
+        }
+      
+        try {
+          console.log("Fetching existing instances...");
+          const response = await alephClient.getMessages({
+            types: ["INSTANCE"],
+            addresses: [connectedWalletAddress],
+          });
+      
+          if (!response || !response.messages.length) {
+            console.log("No instances found.");
+            alert("No instances found for this wallet.");
+            return;
+          }
+      
+          console.log("Fetched instances:", response.messages);
+      
+          // Clear existing nodes from the UI
+          nodeGrid.innerHTML = "";
+      
+          // Iterate over fetched instances and render them
+          for (const message of response.messages) {
+            try {
+              const ipv6 = await fetchInstanceIp(message.item_hash);
+              renderNodeCard({
+                id: message.item_hash,
+                ipv6: ipv6 || "Unavailable",
+                status: ipv6 ? "Running" : "Initializing",
+                uptime: calculateUptime(message.time),
+              });
+            } catch (error) {
+              console.error(`Failed to fetch instance details for ${message.item_hash}:`, error.message);
+              renderNodeCard({
+                id: message.item_hash,
+                ipv6: "Error fetching IP",
+                status: "Error",
+                uptime: calculateUptime(message.time),
+              });
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching instances:", error.message);
+          alert("Failed to fetch instances. Please try again.");
+        }
+      }
+      
+
+    function calculateUptime(createdAtTimestamp) {
+      const createdAt = new Date(createdAtTimestamp * 1000);
+      const now = new Date();
+      const diffMs = now - createdAt;
+      const hours = Math.floor(diffMs / (1000 * 60 * 60));
+      const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+      return `${hours}h ${minutes}m`;
     }
 
-    function checkNodeStatus(nodeId) {
-      alert(`Checking status for ${nodeId}`);
-      // Use an API call to check the status
+    async function getLogs(instanceId) {
+      try {
+        console.log(`Fetching logs for instance ${instanceId}`);
+        const logs = await alephClient.getMessages({
+          types: ["LOG"],
+          hashes: [instanceId],
+        });
+        console.log("Logs fetched:", logs.messages);
+      } catch (error) {
+        console.error(`Error fetching logs for ${instanceId}:`, error.message);
+      }
     }
 
-    function sshIntoNode(ipv6) {
-      alert(`Connecting via SSH to ${ipv6}`);
-      // SSH implementation goes here
-    }
-
-    // Simulate some initial nodes
-    const initialNodes = [
-      { id: "d10a48b1", ipv6: "2607:f8b0:4005:805::abcd", status: "Running", uptime: "8h 42m" },
-      { id: "a20b39c2", ipv6: "2607:f8b0:4005:805::1234", status: "Stopped", uptime: "5h 20m" }
-    ];
-
-    // Render initial nodes
-    initialNodes.forEach(renderNodeCard);
-
-    // Auto-connect wallet on load
     connectWallet();
+    generateSSHKey();
+    listInstances();
   </script>
 </body>
 </html>
