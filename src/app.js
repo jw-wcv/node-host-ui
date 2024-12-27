@@ -61,31 +61,68 @@ async function fetchTokenBalance(provider, address) {
 }
 
 async function listInstances() {
-  if (!alephClient) return;
-
-  const response = await alephClient.getMessages({
-    types: ['INSTANCE'],
-    addresses: [alephClient.account.address],
-  });
-
-  nodeGrid.innerHTML = '';
-  for (const message of response.messages) {
-    const instanceId = message.item_hash;
-    const ipv6 = await fetchInstanceIp(instanceId);
-    renderNode({
-      id: instanceId,
-      ipv6: ipv6 || 'Unavailable',
-      status: message.confirmed ? 'Running' : 'Pending',
-      uptime: '0h 0m',
-    });
+    if (!alephClient) {
+      console.error("Aleph client not initialized.");
+      return;
+    }
+  
+    try {
+      console.log("Fetching instances...");
+      const response = await alephClient.getMessages({
+        types: ['INSTANCE'],
+        addresses: [alephClient.account.address],
+      });
+  
+      console.log("Raw response from Aleph:", response);
+  
+      // Clear the node grid
+      nodeGrid.innerHTML = '';
+  
+      // Check if no instances are returned
+      if (!response.messages || response.messages.length === 0) {
+        nodeGrid.innerHTML = '<p>No instances found for this wallet.</p>';
+        return;
+      }
+  
+      // Iterate over the instances and render them
+      for (const message of response.messages) {
+        const instanceId = message.item_hash;
+        const ipv6 = await fetchInstanceIp(instanceId);
+        console.log(`Instance ID: ${instanceId}, IPv6: ${ipv6}`);
+  
+        renderNode({
+          id: instanceId,
+          ipv6: ipv6 || 'Unavailable',
+          status: message.confirmed ? 'Running' : 'Pending',
+          uptime: '0h 0m',
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching instances:", error);
+      nodeGrid.innerHTML = '<p>Error loading instances. Please try again later.</p>';
+    }
   }
-}
+  
+  
 
-async function fetchInstanceIp(instanceId) {
-  const response = await fetch(`https://scheduler.api.aleph.cloud/api/v0/allocation/${instanceId}`);
-  const data = await response.json();
-  return data.vm_ipv6 || null;
-}
+  async function fetchInstanceIp(instanceId) {
+    try {
+      console.log(`Fetching IPv6 address for instance ID: ${instanceId}`);
+      const response = await fetch(`https://scheduler.api.aleph.cloud/api/v0/allocation/${instanceId}`);
+  
+      if (!response.ok) {
+        throw new Error(`Failed to fetch IPv6 for instance ${instanceId}. Status: ${response.status}`);
+      }
+  
+      const data = await response.json();
+      console.log(`IPv6 for instance ${instanceId}:`, data.vm_ipv6);
+      return data.vm_ipv6 || null;
+    } catch (error) {
+      console.error(`Error fetching IPv6 for instance ID ${instanceId}:`, error);
+      return null;
+    }
+  }
+  
 
 function renderNode(node) {
   const card = document.createElement('div');
