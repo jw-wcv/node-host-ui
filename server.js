@@ -40,4 +40,10 @@ const requestHandler = (req, res) => {
   });
 };
 
-// Create the serv
+// Create the server
+const server = http.createServer(requestHandler);
+
+// Start the server on port 8080
+server.listen(PORT, '::', () => {
+  console.log(`Server is running on port ${PORT} and accessible via IPv6`);
+});
