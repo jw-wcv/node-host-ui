@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web3 Wallet Connect</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    #root {
+      width: 100%;
+      max-width: 400px;
+      padding: 20px;
+      background: white;
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      text-align: center;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      margin: 10px;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .status-success {
+      color: green;
+    }
+    .status-error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <div id="root">
+    <h1>Connect Your Wallet</h1>
+    <p id="status">Status: Not connected</p>
+    <button id="connectButton">Connect Wallet</button>
+    <div id="walletInfo" style="display: none;">
+      <p><strong>Address:</strong> <span id="walletAddress"></span></p>
+      <p><strong>Balance:</strong> <span id="walletBalance">0 ETH</span></p>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
+  <script>
+    const connectButton = document.getElementById("connectButton");
+    const status = document.getElementById("status");
+    const walletInfo = document.getElementById("walletInfo");
+    const walletAddress = document.getElementById("walletAddress");
+    const walletBalance = document.getElementById("walletBalance");
+    const tokenAddress = "0x27702a26126e0B3702af63Ee09aC4d1A084EF628";
+    const tokenABI = [
+      "function balanceOf(address owner) view returns (uint256)",
+      "function decimals() view returns (uint8)"
+    ];
+
+    // Fetch token balance
+    async function fetchTokenBalance(provider, address) {
+      try {
+        const contract = new ethers.Contract(tokenAddress, tokenABI, provider);
+        const balance = await contract.balanceOf(address);
+        const decimals = await contract.decimals();
+        return ethers.utils.formatUnits(balance, decimals);
+      } catch (err) {
+        console.error("Error fetching token balance:", err);
+        return "0"; // Default to 0 if there's an error
+      }
+    }
+
+    // Initialize Web3 functionality
+    async function connectWallet() {
+      try {
+        status.textContent = "Connecting...";
+        status.className = "";
+
+        if (!window.ethereum) {
+          alert("MetaMask is not installed. Please install it to use this app.");
+          return;
+        }
+
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        const signer = provider.getSigner();
+        const address = await signer.getAddress();
+        const ethBalance = await provider.getBalance(address);
+        const formattedEthBalance = ethers.utils.formatEther(ethBalance);
+
+        // Fetch token balance
+        const tokenBalance = await fetchTokenBalance(provider, address);
+
+        // Display wallet details
+        walletInfo.style.display = "block";
+        walletAddress.textContent = address;
+        walletBalance.textContent = `${formattedEthBalance} ETH (${tokenBalance} Tokens)`;
+        status.textContent = "Status: Connected";
+        status.className = "status-success";
+      } catch (err) {
+        console.error(err);
+        status.textContent = "Status: Failed to connect";
+        status.className = "status-error";
+      }
+    }
+
+    connectButton.addEventListener("click", connectWallet);
+  </script>
+</body>
+</html>
