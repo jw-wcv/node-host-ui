@@ -66,6 +66,9 @@ body {
     margin-bottom: 30px;
 }
 
+.dashboard-header div {
+    gap: 10px; /* Spacing between buttons */
+}
 
 .dashboard-header h1 {
     font-size: 1.8em;

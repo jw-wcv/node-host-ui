@@ -167,14 +167,21 @@ async function listInstances() {
 
 async function createSSHKey() {
     try {
-        // Generate RSA Key Pair
-        const keypair = forge.pki.rsa.generateKeyPair({ bits: 4096, e: 0x10001 });
+        if (!alephClient || !alephClient.account || !alephClient.account.account) {
+            console.error("Aleph client or account is not initialized.");
+            return;
+        }
 
-        // Export Public Key as PEM
-        const publicKeyPem = forge.pki.publicKeyToPem(keypair.publicKey);
+        const walletAddress = alephClient.account.account.address;
+        if (!walletAddress) {
+            console.error("Wallet address is undefined.");
+            return;
+        }
 
-        // Export Private Key as PEM
-        const privateKeyPem = forge.pki.privateKeyToPem(keypair.privateKey);
+        // Generate SSH Key Pair
+        const keyPair = forge.pki.rsa.generateKeyPair({ bits: 4096 });
+        const privateKeyPem = forge.pki.privateKeyToPem(keyPair.privateKey);
+        const publicKeyPem = forge.pki.publicKeyToPem(keyPair.publicKey);
 
         // Ask the user for a label for the SSH key
         const label = prompt("Enter a label for your SSH key:", "MySSHKey");
@@ -187,7 +194,7 @@ async function createSSHKey() {
         const message = await alephClient.createPost({
             content: {
                 type: "ALEPH-SSH",
-                address: alephClient.account.account.address,
+                address: walletAddress,
                 content: {
                     key: publicKeyPem,
                     label: label,
@@ -199,7 +206,7 @@ async function createSSHKey() {
 
         console.log("SSH Key Posted:", message);
 
-        // Prepare the private key for download
+        // Download the private key as a file
         const blob = new Blob([privateKeyPem], { type: "text/plain" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -211,17 +218,11 @@ async function createSSHKey() {
 
         alert("SSH Key created and saved successfully!");
     } catch (error) {
-        console.error("Error creating SSH Key:", error);
+        console.error("Error creating SSH Key:", error.message);
         alert("An error occurred while creating the SSH key. Please try again.");
     }
 }
 
-function convertArrayBufferToPem(buffer, label) {
-    const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
-    const chunks = base64.match(/.{1,64}/g);
-    const pem = `-----BEGIN ${label}-----\n${chunks.join("\n")}\n-----END ${label}-----`;
-    return pem;
-}
 
 function calculateUptime(createdTime) {
     const now = new Date();
