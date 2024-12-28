@@ -218,9 +218,8 @@ async function listInstances() {
   
     return availableCompute;
   }
-  
   // Update Available Compute Chart
-  function updateAvailableComputeChart(runningVMs, balance) {
+function updateAvailableComputeChart(runningVMs, balance) {
     const compute = calculateAvailableCompute(balance);
     const ctx = document.getElementById('availableComputeChart').getContext('2d');
     if (availableComputeChart) {
@@ -228,27 +227,27 @@ async function listInstances() {
     }
 
     // Define bar colors dynamically
-    const runningColors = compute.map(tier =>
-        tier.cores <= runningVMs ? '#2196f3' : '#b0bec5' // Blue for available, Grey for unavailable
+    const runningColors = compute.map((tier) =>
+        tier.cores <= runningVMs ? '#2196f3' : '#b0bec5' // Blue for valid, Grey for invalid
     );
-    const availableColors = compute.map(tier =>
-        tier.available > 0 ? '#ff9800' : '#b0bec5' // Orange for available, Grey for unavailable
+    const availableColors = compute.map((tier) =>
+        tier.available > 0 && tier.available >= runningVMs ? '#ff9800' : '#b0bec5' // Orange for valid, Grey for insufficient
     );
 
     availableComputeChart = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: compute.map(tier => `${tier.cores} cores / ${tier.ram}GB RAM`),
+            labels: compute.map((tier) => `${tier.cores} cores / ${tier.ram}GB RAM`),
             datasets: [
                 {
                     label: 'Running VMs',
-                    data: compute.map(tier => tier.cores <= runningVMs ? runningVMs : 0),
+                    data: compute.map((tier) => runningVMs),
                     backgroundColor: runningColors,
                     borderRadius: 4,
                 },
                 {
                     label: 'Available VMs',
-                    data: compute.map(tier => tier.available),
+                    data: compute.map((tier) => tier.available),
                     backgroundColor: availableColors,
                     borderRadius: 4,
                 },
@@ -306,6 +305,7 @@ async function listInstances() {
         },
     });
 }
+
 
 
   
