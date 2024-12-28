@@ -237,9 +237,6 @@ async function createSSHKey() {
     }
 }
 
-
-
-
 function calculateUptime(createdTime) {
     const now = new Date();
     const diffMs = now - createdTime;
@@ -257,9 +254,7 @@ function calculateUptime(createdTime) {
 
     return uptime;
 }
-
-
-  
+ 
   function updatePowerDial(balance) {
     const powerPercentage = Math.min((balance / 200000) * 100, 100); // Max 100%
     const ctx = document.getElementById('powerDial').getContext('2d');
@@ -299,7 +294,6 @@ function calculateUptime(createdTime) {
     });
     
 }
-
 
 // Calculate total VMs that can be purchased
 function calculateAvailableCompute(balance) {
@@ -396,11 +390,7 @@ function updateAvailableComputeChart(runningVMs, balance) {
             },
         },
     });
-}
-
-
-
-  
+} 
 
 async function fetchInstanceIp(instanceId) {
 try {
@@ -418,8 +408,7 @@ try {
     console.error(`Error fetching IPv6 for instance ID ${instanceId}:`, error);
     return null;
 }
-}
-  
+} 
 
 function renderNode(node) {
     const card = document.createElement('div');
@@ -446,8 +435,6 @@ function renderNode(node) {
 
     nodeGrid.appendChild(card);
 }
-
-
 
 async function pingNode(ipv6, button) {
     if (!ipv6 || ipv6 === 'Unavailable') {
@@ -522,30 +509,101 @@ async function pingNode(ipv6, button) {
         pingResult.innerHTML = `<strong>Ping Failed:</strong> ${error.message}`;
     }
 }
-
-
   
+async function getSSHKeys() {
+    try {
+        if (!window.ethereum) {
+            throw new Error("MetaMask not found. Please install it.");
+        }
+
+        // Request wallet connection and retrieve account
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const account = await getAccountFromProvider(window.ethereum);
+
+        // Initialize Aleph client
+        alephClient = new AuthenticatedAlephHttpClient(account);
+
+        // Fetch POST messages of type ALEPH-SSH
+        const response = await alephClient.getMessages({
+            types: ['POST'],
+            addresses: [account.address],
+        });
+
+        const sshKeys = response.messages
+            .filter(
+                (msg) =>
+                    msg.content.type === 'ALEPH-SSH' &&
+                    msg.content.content &&
+                    msg.content.content.key
+            )
+            .map((msg) => ({
+                key: msg.content.content.key,
+                label: msg.content.content.label || 'Unnamed Key',
+                time: msg.time,
+            }));
+
+        console.log("Retrieved SSH Keys:", sshKeys);
+        return sshKeys;
+    } catch (error) {
+        console.error("Error retrieving SSH keys:", error.message, error.stack);
+        alert("An error occurred while retrieving SSH keys. Please try again.");
+        return [];
+    }
+}
+
 
 async function createInstance() {
-  const sshKey = prompt("Enter SSH Key:");
-  if (!sshKey) return;
+    try {
+        const sshKeys = await getSSHKeys();
 
-  try {
-    const instance = await alephClient.createInstance({
-      authorized_keys: [sshKey],
-      resources: { vcpus: 2, memory: 2048, seconds: 3600 },
-      payment: { chain: "ETH", type: "hold" },
-      channel: alephChannel,
-      image: "4a0f62da42f4478544616519e6f5d58adb1096e069b392b151d47c3609492d0c",
-      environment: {},
-    });
+        if (sshKeys.length === 0) {
+            alert("No SSH keys available. Please create one before launching an instance.");
+            return;
+        }
 
-    alert(`Instance ${instance.item_hash} created successfully!`);
-    await listInstances();
-  } catch (error) {
-    console.error("Error creating instance:", error);
-  }
+        // Let the user select an SSH key from the available list
+        const keyOptions = sshKeys
+            .map((key, index) => `${index + 1}. ${key.label} (Created: ${new Date(key.time * 1000).toLocaleString()})`)
+            .join('\n');
+        const choice = prompt(`Select an SSH key:\n${keyOptions}\n\nEnter the number:`);
+        const selectedKeyIndex = parseInt(choice, 10) - 1;
+
+        if (isNaN(selectedKeyIndex) || selectedKeyIndex < 0 || selectedKeyIndex >= sshKeys.length) {
+            alert("Invalid selection. Please try again.");
+            return;
+        }
+
+        const selectedKey = sshKeys[selectedKeyIndex].key;
+
+        if (!selectedKey) {
+            alert("Selected SSH key is invalid. Please try again.");
+            return;
+        }
+
+        // Request wallet connection and retrieve account
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const account = await getAccountFromProvider(window.ethereum);
+
+        // Initialize Aleph client
+        alephClient = new AuthenticatedAlephHttpClient(account);
+
+        // Create instance with the selected SSH key
+        const instance = await alephClient.createInstance({
+            authorized_keys: [selectedKey],
+            resources: { vcpus: 2, memory: 2048, seconds: 3600 },
+            payment: { chain: "ETH", type: "hold" },
+            channel: "ALEPH-CLOUDSOLUTIONS",
+            image: "4a0f62da42f4478544616519e6f5d58adb1096e069b392b151d47c3609492d0c",
+            environment: {},
+        });
+
+        alert(`Instance ${instance.item_hash} created successfully!`);
+    } catch (error) {
+        console.error("Error creating instance:", error.message, error.stack);
+        alert("An error occurred while creating the instance. Please try again.");
+    }
 }
+
 
 async function deleteNode(instanceId) {
   try {
