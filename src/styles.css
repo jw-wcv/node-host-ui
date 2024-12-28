@@ -88,34 +88,55 @@ body {
     background-color: #ff5c7a;
 }
 
+/* Grid Containers */
 .grid-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Allow scaling for smaller cards */
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Flexible scaling */
+    gap: 20px; /* Even spacing between grid items */
     padding-bottom: 30px;
+    justify-content: center; /* Center-align content */
+    align-items: start; /* Consistent alignment */
 }
 
+
+/* Card Styles */
 .card {
     background-color: #1a1a2e;
-    padding: 20px;
+    padding: 15px; /* Proportional padding */
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    max-width: 100%; /* Ensure it doesn’t overflow the container */
+    display: flex;
+    flex-direction: column; /* Maintain vertical alignment */
+    justify-content: space-between; /* Spread content inside */
+    word-wrap: break-word; /* Prevent text from breaking layout */
+    text-align: left; /* Align text to the left */
+    box-sizing: border-box; /* Include padding in the width */
 }
-
+/* Card Header */
 .card h3 {
-    margin: 0 0 15px;
+    margin: 0 0 10px;
     font-size: 1.2em;
     font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap; /* Ensure headers don’t wrap */
 }
 
+/* Card Paragraphs */
 .card p {
     margin: 5px 0;
     font-size: 0.9em;
     color: #c1c1c1;
+    overflow-wrap: break-word; /* Handle long text properly */
 }
 
+/* Card Buttons */
 .card-actions {
     margin-top: 15px;
+    display: flex;
+    gap: 10px; /* Spacing between buttons */
+    justify-content: space-between; /* Evenly space buttons */
 }
 
 .card-actions button {
@@ -126,8 +147,9 @@ body {
     border-radius: 6px;
     font-size: 0.9em;
     cursor: pointer;
-    margin-right: 10px;
     transition: background-color 0.3s ease;
+    flex: 1; /* Ensure buttons have equal width */
+    text-align: center; /* Center-align button text */
 }
 
 .card-actions button:hover {
