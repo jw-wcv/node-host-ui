@@ -3,6 +3,7 @@ import { AuthenticatedAlephHttpClient } from '@aleph-sdk/client';
 import { ethers } from 'ethers';
 import './styles.css';
 import Chart from 'chart.js/auto';
+import forge from 'node-forge';
 
 
 const walletDisplay = document.getElementById('walletDisplay');
@@ -166,25 +167,14 @@ async function listInstances() {
 
 async function createSSHKey() {
     try {
-        // Generate SSH Key Pair
-        const keyPair = await window.crypto.subtle.generateKey(
-            {
-                name: "RSA-PSS",
-                modulusLength: 4096,
-                publicExponent: new Uint8Array([1, 0, 1]),
-                hash: { name: "SHA-256" },
-            },
-            true,
-            ["sign", "verify"]
-        );
+        // Generate RSA Key Pair
+        const keypair = forge.pki.rsa.generateKeyPair({ bits: 4096, e: 0x10001 });
 
-        // Export Public Key
-        const publicKey = await window.crypto.subtle.exportKey("spki", keyPair.publicKey);
-        const publicKeyPem = convertArrayBufferToPem(publicKey, "PUBLIC KEY");
+        // Export Public Key as PEM
+        const publicKeyPem = forge.pki.publicKeyToPem(keypair.publicKey);
 
-        // Export Private Key
-        const privateKey = await window.crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
-        const privateKeyPem = convertArrayBufferToPem(privateKey, "PRIVATE KEY");
+        // Export Private Key as PEM
+        const privateKeyPem = forge.pki.privateKeyToPem(keypair.privateKey);
 
         // Ask the user for a label for the SSH key
         const label = prompt("Enter a label for your SSH key:", "MySSHKey");
@@ -209,7 +199,7 @@ async function createSSHKey() {
 
         console.log("SSH Key Posted:", message);
 
-        // Download the private key as a file
+        // Prepare the private key for download
         const blob = new Blob([privateKeyPem], { type: "text/plain" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -566,6 +556,6 @@ function disconnectWallet() {
 connectWalletButton.addEventListener('click', connectWallet);
 
 document.querySelector('.create-node-button').addEventListener('click', createInstance);
-document.querySelector('.create-ssh-button').addEventListener('click', createSSHKey);
+window.createSSHKey = createSSHKey;
 
 
