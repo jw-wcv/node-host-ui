@@ -115,6 +115,7 @@ async function listInstances() {
 
         let totalCores = 0;
         let totalMemory = 0;
+        let totalCost = 0;
 
         // Render valid instances
         for (const message of validInstances) {
@@ -127,6 +128,12 @@ async function listInstances() {
             if (resources) {
                 totalCores += resources.vcpus || 0;
                 totalMemory += resources.memory || 0;
+
+                // Calculate cost based on VM_TIERS
+                const tier = VM_TIERS.find((t) => t.cores === resources.vcpus && t.ram === resources.memory / 1024);
+                if (tier) {
+                    totalCost += tier.cost;
+                }
             }
 
             renderNode({
@@ -142,6 +149,10 @@ async function listInstances() {
         document.getElementById('totalCpu').textContent = `${totalCores} vCPUs`;
         document.getElementById('totalMemory').textContent = `${(totalMemory / 1024).toFixed(2)} GB`;
 
+        // Update Billing Information section
+        document.getElementById('currentMonth').textContent = `${(totalCost / 1000).toFixed(2)} K ALEPH`;
+        document.getElementById('totalUsage').textContent = `${(totalCost / 1000).toFixed(2)} K ALEPH`;
+
         // Update charts
         const balanceMatch = balanceDisplay.textContent.match(/Balance:\s([\d.]+)/);
         const balance = balanceMatch ? parseFloat(balanceMatch[1]) : 0;
@@ -152,6 +163,7 @@ async function listInstances() {
         nodeGrid.innerHTML = '<p>Error loading instances. Please refresh or try again later.</p>';
     }
 }
+
 
 
 
