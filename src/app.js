@@ -79,22 +79,17 @@ async function listInstances() {
 
     try {
         console.log("Fetching instances...");
-        console.log("Aleph Client Object:", alephClient);
-
         const walletAddress = alephClient.account.account?.address;
         if (!walletAddress) {
             console.warn("Wallet address is undefined.");
             return;
         }
-        console.log("Aleph Client Wallet Address:", walletAddress);
 
         // Fetch both INSTANCE and FORGET messages
         const response = await alephClient.getMessages({
             types: ['INSTANCE', 'FORGET'],
             addresses: [walletAddress],
         });
-
-        console.log("Raw response from Aleph:", response);
 
         // Clear the node grid
         nodeGrid.innerHTML = '';
@@ -111,8 +106,6 @@ async function listInstances() {
                 .filter((msg) => msg.type === 'FORGET')
                 .flatMap((msg) => msg.content.hashes || [])
         );
-
-        console.log("FORGET hashes:", Array.from(forgetHashes));
 
         // Filter instances to exclude those with a matching FORGET message
         const validInstances = instanceMessages.filter((msg) => !forgetHashes.has(msg.item_hash));
@@ -133,8 +126,6 @@ async function listInstances() {
             }
         }
 
-        console.log(`Total Cores: ${totalCores}, Total Memory: ${totalMemory} MB`);
-
         // Update Resource Usage section
         document.getElementById('totalCpu').textContent = `${totalCores} vCPUs`;
         document.getElementById('totalMemory').textContent = `${(totalMemory / 1024).toFixed(2)} GB`;
@@ -142,11 +133,12 @@ async function listInstances() {
         // Render valid instances
         for (const message of validInstances) {
             const instanceId = message.item_hash;
+            const metadata = message.content?.metadata || {};
             const ipv6 = await fetchInstanceIp(instanceId);
-            console.log(`Instance ID: ${instanceId}, IPv6: ${ipv6 || 'Unavailable'}`);
 
             renderNode({
                 id: instanceId,
+                name: metadata.name, // Use the name from metadata
                 ipv6: ipv6 || 'Unavailable',
                 status: message.confirmed ? 'Running' : 'Pending',
                 uptime: '0h 0m',
@@ -163,6 +155,8 @@ async function listInstances() {
         nodeGrid.innerHTML = '<p>Error loading instances. Please refresh or try again later.</p>';
     }
 }
+
+
 
 
 
@@ -209,15 +203,15 @@ async function listInstances() {
 }
 
 
-  // Calculate total VMs that can be purchased
-  function calculateAvailableCompute(balance) {
-    const availableCompute = VM_TIERS.map((tier) => ({
-      ...tier,
-      available: Math.floor(balance / tier.cost), // Calculate how many of each VM can be purchased
-    }));
-  
-    return availableCompute;
-  }
+// Calculate total VMs that can be purchased
+function calculateAvailableCompute(balance) {
+const availableCompute = VM_TIERS.map((tier) => ({
+    ...tier,
+    available: Math.floor(balance / tier.cost), // Calculate how many of each VM can be purchased
+}));
+
+return availableCompute;
+}
   // Update Available Compute Chart
 function updateAvailableComputeChart(runningVMs, balance) {
     const compute = calculateAvailableCompute(balance);
@@ -310,30 +304,30 @@ function updateAvailableComputeChart(runningVMs, balance) {
 
   
 
-  async function fetchInstanceIp(instanceId) {
-    try {
-      console.log(`Fetching IPv6 address for instance ID: ${instanceId}`);
-      const response = await fetch(`https://scheduler.api.aleph.cloud/api/v0/allocation/${instanceId}`);
-  
-      if (!response.ok) {
-        throw new Error(`Failed to fetch IPv6 for instance ${instanceId}. Status: ${response.status}`);
-      }
-  
-      const data = await response.json();
-      console.log(`IPv6 for instance ${instanceId}:`, data.vm_ipv6);
-      return data.vm_ipv6 || null;
-    } catch (error) {
-      console.error(`Error fetching IPv6 for instance ID ${instanceId}:`, error);
-      return null;
+async function fetchInstanceIp(instanceId) {
+try {
+    console.log(`Fetching IPv6 address for instance ID: ${instanceId}`);
+    const response = await fetch(`https://scheduler.api.aleph.cloud/api/v0/allocation/${instanceId}`);
+
+    if (!response.ok) {
+    throw new Error(`Failed to fetch IPv6 for instance ${instanceId}. Status: ${response.status}`);
     }
-  }
+
+    const data = await response.json();
+    console.log(`IPv6 for instance ${instanceId}:`, data.vm_ipv6);
+    return data.vm_ipv6 || null;
+} catch (error) {
+    console.error(`Error fetching IPv6 for instance ID ${instanceId}:`, error);
+    return null;
+}
+}
   
 
-  function renderNode(node) {
+function renderNode(node) {
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
-        <h3 class="node-id">${node.id}</h3>
+        <h3 class="node-id">${node.name || node.id}</h3>
         <p><strong>IPv6:</strong> ${node.ipv6}</p>
         <p><strong>Status:</strong> ${node.status}</p>
         <p><strong>Uptime:</strong> ${node.uptime}</p>
@@ -354,6 +348,7 @@ function updateAvailableComputeChart(runningVMs, balance) {
 
     nodeGrid.appendChild(card);
 }
+
 
 async function pingNode(ipv6, button) {
     if (!ipv6 || ipv6 === 'Unavailable') {
