@@ -71,57 +71,66 @@ async function listInstances() {
         console.log("Aleph Client Object:");
         console.dir(alephClient);
 
-        // Log the correct account details
-        if (alephClient && alephClient.account) {
-            console.log("Aleph Client Account Object:", JSON.stringify(alephClient.account, null, 2));
+        const walletAddress = alephClient.account.account?.address;
+        if (!walletAddress) {
+            console.warn("Wallet address is undefined.");
+            return;
+        }
+        console.log("Aleph Client Wallet Address:", walletAddress);
 
-            // Extract and log the correct wallet address
-            const walletAddress = alephClient.account.account?.address;
-            if (walletAddress) {
-                console.log("Aleph Client Wallet Address:", walletAddress);
-            } else {
-                console.warn("Wallet address is undefined.");
-                return;
-            }
+        // Fetch both INSTANCE and FORGET messages
+        const response = await alephClient.getMessages({
+            types: ['INSTANCE', 'FORGET'],
+            addresses: [walletAddress],
+        });
 
-            // Fetch messages using the correct wallet address
-            const response = await alephClient.getMessages({
-                types: ['INSTANCE'],
-                addresses: [walletAddress], // Use the correct variable
+        console.log("Raw response from Aleph:", response);
+
+        // Clear the node grid
+        nodeGrid.innerHTML = '';
+
+        if (!response.messages || response.messages.length === 0) {
+            nodeGrid.innerHTML = '<p>No instances found for this wallet.</p>';
+            return;
+        }
+
+        // Separate INSTANCE and FORGET messages
+        const instanceMessages = response.messages.filter(msg => msg.type === 'INSTANCE');
+        const forgetHashes = new Set(
+            response.messages
+                .filter(msg => msg.type === 'FORGET')
+                .flatMap(msg => msg.content.hashes || [])
+        );
+
+        console.log("FORGET hashes:", Array.from(forgetHashes));
+
+        // Filter instances to exclude those with a matching FORGET message
+        const validInstances = instanceMessages.filter(msg => !forgetHashes.has(msg.item_hash));
+
+        if (validInstances.length === 0) {
+            nodeGrid.innerHTML = '<p>No active instances found for this wallet.</p>';
+            return;
+        }
+
+        // Render valid instances
+        for (const message of validInstances) {
+            const instanceId = message.item_hash;
+            const ipv6 = await fetchInstanceIp(instanceId);
+            console.log(`Instance ID: ${instanceId}, IPv6: ${ipv6 || 'Unavailable'}`);
+
+            renderNode({
+                id: instanceId,
+                ipv6: ipv6 || 'Unavailable',
+                status: message.confirmed ? 'Running' : 'Pending',
+                uptime: '0h 0m',
             });
-
-            console.log("Raw response from Aleph:", response);
-
-            // Clear the node grid
-            nodeGrid.innerHTML = '';
-
-            // Check if no instances are returned
-            if (!response.messages || response.messages.length === 0) {
-                nodeGrid.innerHTML = '<p>No instances found for this wallet.</p>';
-                return;
-            }
-
-            // Iterate over the instances and render them
-            for (const message of response.messages) {
-                const instanceId = message.item_hash;
-                const ipv6 = await fetchInstanceIp(instanceId);
-                console.log(`Instance ID: ${instanceId}, IPv6: ${ipv6}`);
-
-                renderNode({
-                    id: instanceId,
-                    ipv6: ipv6 || 'Unavailable',
-                    status: message.confirmed ? 'Running' : 'Pending',
-                    uptime: '0h 0m',
-                });
-            }
-        } else {
-            console.error("Aleph Client Account is not properly initialized.");
         }
     } catch (error) {
         console.error("Error fetching instances:", error);
         nodeGrid.innerHTML = '<p>Error loading instances. Please try again later.</p>';
     }
 }
+
 
   
   
