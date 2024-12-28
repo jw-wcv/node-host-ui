@@ -13,26 +13,26 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 30px;
+    padding: 15px 5%;
     background-color: #0f3460;
     color: white;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     z-index: 10;
 }
 
-  .navbar h2 {
+.navbar h2 {
     margin: 0;
     font-size: 1.5em;
     font-weight: 600;
-  }
+}
 
-  .wallet-info {
+.wallet-info {
     display: flex;
     align-items: center;
     gap: 15px;
-  }
+}
 
-  .wallet-info button {
+.wallet-info button {
     background-color: #e94560;
     color: white;
     border: none;
@@ -42,14 +42,15 @@ body {
     font-size: 0.9em;
     font-weight: 600;
     transition: background-color 0.3s ease;
-  }
+}
 
-  .wallet-info button:hover {
+.wallet-info button:hover {
     background-color: #ff5c7a;
-  }
+}
 
-  .dashboard {
-    max-width: 95%; /* Increase the width to utilize more space */
+.dashboard {
+    width: 95%;
+    max-width: 1600px; /* Set a reasonable max width for readability */
     margin: 20px auto;
     padding: 20px;
     background-color: #16213e;
@@ -58,20 +59,20 @@ body {
     flex-grow: 1; /* Allow it to grow and fill space */
 }
 
-  .dashboard-header {
+.dashboard-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 30px;
-  }
+}
 
-  .dashboard-header h1 {
+.dashboard-header h1 {
     font-size: 1.8em;
     font-weight: 700;
     margin: 0;
-  }
+}
 
-  .action-button {
+.action-button {
     background-color: #e94560;
     color: white;
     border: none;
@@ -81,43 +82,43 @@ body {
     border-radius: 8px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-  }
+}
 
-  .action-button:hover {
+.action-button:hover {
     background-color: #ff5c7a;
-  }
+}
 
-  .grid-container {
+.grid-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Allow scaling for smaller cards */
     gap: 20px;
     padding-bottom: 30px;
-  }
+}
 
-  .card {
+.card {
     background-color: #1a1a2e;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  }
+}
 
-  .card h3 {
+.card h3 {
     margin: 0 0 15px;
     font-size: 1.2em;
     font-weight: 600;
-  }
+}
 
-  .card p {
+.card p {
     margin: 5px 0;
     font-size: 0.9em;
     color: #c1c1c1;
-  }
+}
 
-  .card-actions {
+.card-actions {
     margin-top: 15px;
-  }
+}
 
-  .card-actions button {
+.card-actions button {
     background-color: #0f3460;
     color: white;
     border: none;
@@ -127,23 +128,22 @@ body {
     cursor: pointer;
     margin-right: 10px;
     transition: background-color 0.3s ease;
-  }
+}
 
-  .card-actions button:hover {
+.card-actions button:hover {
     background-color: #3282b8;
-  }
+}
 
-  .node-id {
+.node-id {
     word-wrap: break-word; /* Wrap long words to the next line */
-    overflow: hidden;      /* Hide overflowing text */
+    overflow: hidden;
     text-overflow: ellipsis; /* Add ellipsis to truncated text */
     white-space: nowrap;    /* Prevent wrapping to the next line */
     max-width: 100%;        /* Ensure it stays within the container */
     display: block;         /* Ensure block layout for consistency */
-  }
-  
+}
 
-  footer {
+footer {
     background-color: #1a1a2e;
     text-align: center;
     padding: 10px;
@@ -151,29 +151,29 @@ body {
     font-size: 0.8em;
 }
 
-  .footer a {
+.footer a {
     color: #e94560;
     text-decoration: none;
-  }
+}
 
-  .footer a:hover {
+.footer a:hover {
     text-decoration: underline;
-  }
+}
 
-  .chart-container {
+.chart-container {
     display: flex;
     justify-content: center;
     align-items: center;
     width: 100%;
-    max-width: 500px; /* Adjust width to fit your design */
-    height: 300px; /* Fixed height for consistent UI */
+    max-width: 600px; /* Adjust for larger screens */
+    height: 300px;
     margin: 20px auto;
 }
 
 .metrics-container {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
+    justify-content: space-between; /* Adjust spacing for larger screens */
     gap: 20px;
     padding: 20px;
 }
@@ -245,10 +245,101 @@ body {
     background-color: #3b82f6; /* Highlight row on hover */
 }
 
-
-
 canvas {
     max-width: 100%;
     height: auto;
+}
+
+/* Responsive Adjustments */
+/* Responsive Adjustments for Large Screens */
+@media screen and (min-width: 1440px) {
+    .grid-container {
+        grid-template-columns: repeat(3, 1fr); /* Three columns for large screens */
+    }
+}
+
+@media screen and (min-width: 2560px) {
+    .dashboard {
+        width: 90%;
+    }
+
+    .grid-container {
+        grid-template-columns: repeat(4, 1fr); /* Four columns for ultra-wide screens */
+    }
+}
+
+/* Responsive Adjustments for Tablets and Mobiles */
+@media screen and (max-width: 1024px) {
+    .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 15px 5%;
+    }
+
+    .wallet-info {
+        margin-top: 10px;
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .action-button {
+        align-self: flex-start;
+        width: 100%; /* Full width on smaller screens */
+        text-align: center;
+    }
+
+    .grid-container {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Smaller columns for tablets */
+    }
+
+    .chart-container {
+        max-width: 100%; /* Take full width */
+        height: auto; /* Allow flexible height */
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .navbar {
+        padding: 10px 4%;
+    }
+
+    .wallet-info {
+        flex-wrap: wrap; /* Wrap wallet info into multiple rows */
+        gap: 10px;
+    }
+
+    .grid-container {
+        grid-template-columns: 1fr; /* Single column for small screens */
+    }
+
+    .card {
+        padding: 15px; /* Reduce padding for smaller screens */
+    }
+
+    .dashboard-header {
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .action-button {
+        padding: 8px;
+        font-size: 0.85em; /* Smaller button size */
+    }
+
+    .ping-result,
+    .workload-table {
+        font-size: 12px; /* Reduce font size for better readability */
+    }
+
+    footer {
+        padding: 5px;
+        font-size: 0.75em; /* Smaller footer text */
+    }
 }
 
