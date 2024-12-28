@@ -156,12 +156,25 @@ body {
   }
 
   .chart-container {
-    max-width: 600px;
-    max-height: 300px;
-    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 500px; /* Adjust width to fit your design */
+    height: 300px; /* Fixed height for consistent UI */
+    margin: 20px auto;
+}
+
+.metrics-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
 }
 
 canvas {
-    width: 100% !important;
-    height: auto !important;
+    max-width: 100%;
+    height: auto;
 }
+
