@@ -1,5 +1,6 @@
 // Import dependencies
 import { AuthenticatedAlephHttpClient } from '@aleph-sdk/client';
+import { getAccountFromProvider } from '@aleph-sdk/ethereum';
 import { ethers } from 'ethers';
 import './styles.css';
 import Chart from 'chart.js/auto';
@@ -167,23 +168,25 @@ async function listInstances() {
 
 async function createSSHKey() {
     try {
-        if (!alephClient || !alephClient.account || !alephClient.account.account) {
-            console.error("Aleph client or account is not initialized.");
-            return;
+        if (!window.ethereum) {
+            throw new Error("MetaMask not found. Please install it.");
         }
 
-        const walletAddress = alephClient.account.account?.address;
-        if (!walletAddress) {
-            console.error("Wallet address is undefined.");
-            return;
-        }
+        // Request wallet connection and retrieve account
+        const account = await getAccountFromProvider(window.ethereum);
 
-        // Generate SSH Key Pair
+        // Initialize Aleph client
+        const alephClient = new AuthenticatedAlephHttpClient({
+            account,
+            node_url: "https://api2.aleph.im",
+        });
+
+        // Generate RSA key pair
         const keyPair = forge.pki.rsa.generateKeyPair({ bits: 4096 });
         const privateKeyPem = forge.pki.privateKeyToPem(keyPair.privateKey);
         const publicKeyPem = forge.pki.publicKeyToPem(keyPair.publicKey);
 
-        // Ask the user for a label for the SSH key
+        // Prompt user for a label for the key
         const label = prompt("Enter a label for your SSH key:", "MySSHKey");
         if (!label) {
             alert("Label is required to create an SSH key.");
@@ -194,19 +197,19 @@ async function createSSHKey() {
         const message = await alephClient.createPost({
             content: {
                 type: "ALEPH-SSH",
-                address: walletAddress,
+                address: account.address,
                 content: {
                     key: publicKeyPem,
-                    label: label,
+                    label,
                 },
             },
             postType: "ssh-key",
-            channel: alephChannel,
+            channel: "MY_CHANNEL",
         });
 
         console.log("SSH Key Posted:", message);
 
-        // Download the private key as a file
+        // Allow user to download the private key
         const blob = new Blob([privateKeyPem], { type: "text/plain" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
