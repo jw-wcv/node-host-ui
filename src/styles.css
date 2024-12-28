@@ -167,12 +167,18 @@ body {
 
 footer {
     background-color: #1a1a2e;
-    text-align: center;
+    text-align: center; /* Centers the text horizontally */
     padding: 10px;
     color: #7a7a7a;
     font-size: 0.8em;
-    margin-bottom: 10px;
+    display: flex; /* Use Flexbox for better alignment */
+    justify-content: center; /* Center content horizontally */
+    align-items: center; /* Center content vertically */
+    width: 100%; /* Ensure it spans the full width */
+    margin-top: auto; /* Push the footer to the bottom of the page */
+    box-sizing: border-box; /* Ensure padding is included in width/height */
 }
+
 
 .footer a {
     color: #e94560;
