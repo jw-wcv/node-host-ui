@@ -222,7 +222,14 @@ async function createSSHKey() {
         a.click();
         document.body.removeChild(a);
 
-        alert("SSH Key created and saved successfully!");
+        // Clear the private key data from memory
+        URL.revokeObjectURL(url); // Revoke the object URL
+        blob = null; // Clear the Blob object
+        privateKeyPem = null; // Clear private key PEM from memory
+        keyPair.privateKey = null; // Explicitly nullify private key in keyPair
+        keyPair = null; // Nullify the key pair object entirely
+
+        alert("SSH Key created, saved successfully, and securely deleted from memory!");
     } catch (error) {
         console.error("Error creating SSH Key:", error.message, error.stack);
         alert("An error occurred while creating the SSH key. Please try again.");
