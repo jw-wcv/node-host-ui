@@ -197,21 +197,26 @@ async function createSSHKey() {
         }
 
         // Post the public key to Aleph
+        /*
         const message = await testMetalephClient.createPost({
             content: { hello: "world" },
             postType: "ssh-key",
             channel: alephChannel,
+        });*/
+
+        const message = await testMetalephClient.createPost({
+            content: {
+                type: "ALEPH-SSH",
+                content: {
+                    key: publicKeyPem,
+                    label: label,
+                },
+            },
+            postType: "POST",
+            channel: alephChannel,
         });
 
-        /*
-        content: {
-            type: "ALEPH-SSH",
-            address: connectedAccount.address, // Ensure this is correct
-            content: {
-                key: publicKeyPem,
-                label,
-            },
-        }, */
+        
 
         console.log("SSH Key Posted:", message);
 
