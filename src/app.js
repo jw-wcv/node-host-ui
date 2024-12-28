@@ -233,10 +233,6 @@ function convertArrayBufferToPem(buffer, label) {
     return pem;
 }
 
-
-
-
-
 function calculateUptime(createdTime) {
     const now = new Date();
     const diffMs = now - createdTime;
@@ -569,4 +565,7 @@ function disconnectWallet() {
 
 connectWalletButton.addEventListener('click', connectWallet);
 
-document.querySelector('.action-button').addEventListener('click', createInstance);
+document.querySelector('.create-node-button').addEventListener('click', createInstance);
+document.querySelector('.create-ssh-button').addEventListener('click', createSSHKey);
+
+
