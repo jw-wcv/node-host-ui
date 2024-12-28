@@ -220,12 +220,14 @@ async function createSSHKey() {
         a.click();
         document.body.removeChild(a);
 
-        // Clear the private key data from memory
-        URL.revokeObjectURL(url); // Revoke the object URL
-        blob = null; // Clear the Blob object
-        privateKeyPem = null; // Clear private key PEM from memory
-        keyPair.privateKey = null; // Explicitly nullify private key in keyPair
-        keyPair = null; // Nullify the key pair object entirely
+        // Revoke the object URL to release memory
+        URL.revokeObjectURL(url);
+
+        // Clear private key details from memory
+        privateKeyPem = null; // Clear the private key PEM variable
+        keyPair.privateKey = null; // Explicitly nullify the private key in the keyPair object
+        keyPair.publicKey = null; // Clear the public key (optional)
+        keyPair = null; // Nullify the entire keyPair object
 
         alert("SSH Key created, saved successfully, and securely deleted from memory!");
     } catch (error) {
