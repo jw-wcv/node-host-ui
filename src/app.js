@@ -353,9 +353,8 @@ async function pingNode(ipv6, button) {
         return;
     }
 
-    const card = button.closest('.card');
-    const pingResult = card.querySelector('.ping-result');
-    pingResult.style.display = 'block'; // Ensure visibility
+    const pingResult = button.parentElement.nextElementSibling; // The <p class="ping-result">
+    pingResult.style.display = 'block';
     pingResult.innerHTML = '<span class="spinner"></span> Pinging...';
 
     try {
@@ -368,45 +367,62 @@ async function pingNode(ipv6, button) {
 
         if (data.status === 'success') {
             const details = data.details
-                .replace(/\n+/g, '\n')
-                .trim();
+                .replace(/\n+/g, '\n') // Replace multiple newlines with a single newline
+                .trim(); // Trim any leading or trailing whitespace
 
-            const rows = details.split('\n').filter(line => line.trim());
-            let tableContent = rows.map(row => {
-                const columns = row.split(/\s{2,}/).map(col => `<td>${col}</td>`);
-                return `<tr>${columns.join('')}</tr>`;
-            }).join('');
+            const lines = details.split('\n').filter(line => line.trim() !== '');
+            let nodeDetails = '';
+            let workloadTable = `<table class="workload-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Version</th>
+                        <th>Status</th>
+                        <th>CPU (cores)</th>
+                        <th>Memory (bytes)</th>
+                        <th>Age</th>
+                        <th>Port(s)</th>
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+
+            for (const line of lines) {
+                if (line.startsWith('Node ID') || line.includes('Gala Node')) {
+                    // Add node details in a separate section
+                    nodeDetails += `<p>${line}</p>`;
+                } else if (line.startsWith('Name') || line.includes('drng') || line.includes('founders')) {
+                    // Format workload status as table rows
+                    const columns = line.split(/\s{2,}/).map(col => col.trim());
+                    workloadTable += `<tr>${columns.map(col => `<td>${col}</td>`).join('')}</tr>`;
+                }
+            }
+
+            workloadTable += '</tbody></table>';
 
             pingResult.innerHTML = `
                 <div class="ping-success">
                     <strong>Ping Success:</strong>
-                    Node ID: <span>${data.nodeId}</span><br/>
-                    Gala Node is running.
+                    <div class="node-details">
+                        ${nodeDetails}
+                    </div>
+                    <div class="workload-status">
+                        <h4>Workload Status:</h4>
+                        ${workloadTable}
+                    </div>
                 </div>
-                <table class="workload-table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Version</th>
-                            <th>Status</th>
-                            <th>CPU</th>
-                            <th>Memory</th>
-                            <th>Age</th>
-                            <th>Port(s)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${tableContent}
-                    </tbody>
-                </table>
             `;
         } else {
             pingResult.innerHTML = `<strong>Ping Failed:</strong> ${JSON.stringify(data)}`;
         }
     } catch (error) {
-        pingResult.innerHTML = `<strong>Error:</strong> ${error.message}`;
+        console.error('Ping error:', error);
+        pingResult.innerHTML = `<strong>Ping Failed:</strong> ${error.message}`;
     }
 }
+
+
+  
 
 async function createInstance() {
   const sshKey = prompt("Enter SSH Key:");
