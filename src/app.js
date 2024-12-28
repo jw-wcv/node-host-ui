@@ -422,6 +422,7 @@ function renderNode(node) {
         <div class="card-actions">
             <button class="delete-button">Delete</button>
             <button class="ping-button">Ping</button>
+            <button class="configure-button">Configure</button>
         </div>
         <p class="ping-result" style="display: none;"></p>
     `;
@@ -429,13 +430,88 @@ function renderNode(node) {
     // Add event listeners
     const deleteButton = card.querySelector('.delete-button');
     const pingButton = card.querySelector('.ping-button');
+    const configureButton = card.querySelector('.configure-button');
     const pingResultElement = card.querySelector('.ping-result');
 
     deleteButton.addEventListener('click', () => deleteNode(node.id));
     pingButton.addEventListener('click', () => pingNode(node.ipv6, pingButton, pingResultElement));
+    configureButton.addEventListener('click', () => configureNode(node.ipv6, node.id)); // Add this line
 
+    const nodeGrid = document.getElementById('nodeGrid');
     nodeGrid.appendChild(card);
 }
+
+
+async function configureNode(ipv6, nodeId) {
+    try {
+        // Prompt the user to upload the private key
+        const privateKey = await requestPrivateKey();
+        if (!privateKey) {
+            alert("Private key is required to configure the node.");
+            return;
+        }
+
+        // Prompt the user for the Git repository URL
+        const gitRepo = prompt("Enter the Git repository URL to clone:");
+        if (!gitRepo) {
+            alert("Git repository URL is required.");
+            return;
+        }
+
+        // Perform SSH and configuration
+        const sshCommand = `
+            ssh -i "${privateKey}" root@${ipv6} <<EOF
+            echo "Starting configuration on ${ipv6}...";
+            git clone ${gitRepo};
+            repoName=\$(basename ${gitRepo} .git);
+            cd \$repoName;
+            chmod +x bootstrap.sh;
+            ./bootstrap.sh;
+            echo "Configuration complete.";
+            EOF
+        `;
+
+        console.log("Executing SSH command:", sshCommand);
+
+        // Simulate SSH execution for the demo (replace this with actual backend or WebSocket call)
+        alert(`Configuration process initiated for node: ${nodeId}. Check the logs.`);
+    } catch (error) {
+        console.error("Error configuring node:", error);
+        alert("An error occurred while configuring the node. Please try again.");
+    }
+}
+
+async function requestPrivateKey() {
+    return new Promise((resolve) => {
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = '.pem'; // Restrict to private key files
+        fileInput.style.display = 'none';
+
+        fileInput.onchange = (event) => {
+            const file = event.target.files[0];
+            if (!file) {
+                alert("No file selected.");
+                resolve(null);
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => {
+                alert("Failed to read private key file.");
+                resolve(null);
+            };
+            reader.readAsText(file);
+        };
+
+        document.body.appendChild(fileInput);
+        fileInput.click();
+        document.body.removeChild(fileInput);
+    });
+}
+
+
 
 async function pingNode(ipv6, button) {
     if (!ipv6 || ipv6 === 'Unavailable') {
@@ -586,8 +662,8 @@ async function createInstance() {
 
                 alert(`Instance ${instance.item_hash} created successfully!`);
 
-                // Refresh instances
                 try {
+                    // Refresh the instance list
                     await listInstances();
                     console.log("DApp refreshed successfully.");
                 } catch (refreshError) {
