@@ -171,11 +171,13 @@ footer {
     padding: 10px;
     color: #7a7a7a;
     font-size: 0.8em;
+    margin-bottom: 10px;
 }
 
 .footer a {
     color: #e94560;
     text-decoration: none;
+    text-align: center;
 }
 
 .footer a:hover {
@@ -347,6 +349,8 @@ canvas {
     footer {
         padding: 5px;
         font-size: 0.75em; /* Smaller footer text */
+        text-align: center;
+        margin-bottom: 10px;
     }
 }
 
