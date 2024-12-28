@@ -172,7 +172,7 @@ async function createSSHKey() {
             return;
         }
 
-        const walletAddress = alephClient.account.account.address;
+        const walletAddress = alephClient.account.account?.address;
         if (!walletAddress) {
             console.error("Wallet address is undefined.");
             return;
