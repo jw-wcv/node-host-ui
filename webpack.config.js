@@ -1,5 +1,6 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const webpack = require('webpack');
 
 module.exports = {
   entry: './src/app.js', // Path to your main JS file
@@ -27,6 +28,9 @@ module.exports = {
       template: './src/index.html', // Use your source index.html
       filename: 'index.html', // Output to dist/index.html
       inject: 'body', // Ensure scripts are loaded in the body
+    }),
+    new webpack.ProvidePlugin({
+      Buffer: ['buffer', 'Buffer'], // Automatically provide Buffer
     }),
   ],
   module: {
