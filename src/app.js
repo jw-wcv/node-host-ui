@@ -555,81 +555,83 @@ async function getSSHKeys() {
 
 async function createInstance() {
     try {
-        const sshKeys = await getSSHKeys();
-        if (!sshKeys || sshKeys.length === 0) {
-            alert("No SSH keys available. Please create one first.");
+        const sshKeys = await getSSHKeys(); // Fetch available SSH keys
+        if (sshKeys.length === 0) {
+            alert('No SSH keys available. Please create one first.');
             return;
         }
 
+        // Prompt user for a label for the key
         const label = prompt("Enter a label for your VM:", "AlephVM");
         if (!label) {
             alert("Label is required to create a VM.");
             return;
         }
 
+        // Call the radio button-based selection function
         selectSSHKey(sshKeys, async (selectedKey) => {
-            console.log("Selected SSH Key:", selectedKey);
+            console.log('Selected SSH Key:', selectedKey);
 
-            if (!selectedKey?.content?.key) {
-                alert("Invalid SSH key selected. Please try again.");
-                return;
-            }
+            const instance = await alephClient.createInstance({
+                authorized_keys: [selectedKey.content.key],
+                resources: { vcpus: 1, memory: 2048, seconds: 3600 },
+                payment: { chain: 'ETH', type: 'hold' },
+                channel: alephChannel,
+                metadata: { name: label },
+                image: '4a0f62da42f4478544616519e6f5d58adb1096e069b392b151d47c3609492d0c',
+                environment: {},
+            });
 
-            try {
-                const instance = await alephClient.createInstance({
-                    authorized_keys: [selectedKey.content.key],
-                    resources: { vcpus: 1, memory: 2048, seconds: 3600 },
-                    payment: { chain: "ETH", type: "hold" },
-                    channel: alephChannel,
-                    metadata: { name: label },
-                    image: "4a0f62da42f4478544616519e6f5d58adb1096e069b392b151d47c3609492d0c",
-                    environment: {},
-                });
-
-                alert(`Instance ${instance.item_hash} created successfully!`);
-                await listInstances();
-            } catch (error) {
-                console.error("Error creating instance:", error.message);
-                alert("An error occurred while creating the instance. Please try again.");
-            }
+            alert(`Instance ${instance.item_hash} created successfully!`);
+            await listInstances();
         });
     } catch (error) {
-        console.error("Error creating instance:", error.message);
-        alert("An error occurred. Please try again.");
+        console.error('Error creating instance:', error.message);
+        alert('An error occurred while creating the instance. Please try again.');
     }
 }
 
-
 function selectSSHKey(sshKeys, onSelect) {
-    // Ensure sshKeys have valid content
-    if (!Array.isArray(sshKeys) || sshKeys.some((key) => !key.content?.key)) {
-        alert("SSH key data is invalid. Please try again.");
-        return;
-    }
+    // Create modal
+    const modal = document.createElement('div');
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
+    modal.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    modal.style.display = 'flex';
+    modal.style.justifyContent = 'center';
+    modal.style.alignItems = 'center';
+    modal.style.zIndex = '1000';
 
-    const modal = document.createElement("div");
-    modal.classList.add("modal-backdrop");
+    // Create modal content
+    const modalContent = document.createElement('div');
+    modalContent.style.backgroundColor = '#fff';
+    modalContent.style.padding = '20px';
+    modalContent.style.borderRadius = '10px';
+    modalContent.style.width = '90%';
+    modalContent.style.maxWidth = '500px';
 
-    const modalContent = document.createElement("div");
-    modalContent.classList.add("modal-content");
-
-    const title = document.createElement("h2");
-    title.textContent = "Select an SSH Key";
+    // Add title
+    const title = document.createElement('h2');
+    title.textContent = 'Select an SSH Key';
     modalContent.appendChild(title);
 
-    const form = document.createElement("form");
+    // Create radio button list
+    const form = document.createElement('form');
     sshKeys.forEach((key, index) => {
-        const optionContainer = document.createElement("div");
-        optionContainer.classList.add("radio-option");
+        const optionContainer = document.createElement('div');
+        optionContainer.style.marginBottom = '10px';
 
-        const radio = document.createElement("input");
-        radio.type = "radio";
-        radio.name = "sshKey";
+        const radio = document.createElement('input');
+        radio.type = 'radio';
+        radio.name = 'sshKey';
         radio.value = index;
         radio.id = `sshKey-${index}`;
-        if (index === 0) radio.checked = true;
+        if (index === 0) radio.checked = true; // Default selection
 
-        const label = document.createElement("label");
+        const label = document.createElement('label');
         label.htmlFor = `sshKey-${index}`;
         label.textContent = `${key.label} (Created: ${new Date(key.time * 1000).toLocaleString()})`;
 
@@ -640,30 +642,41 @@ function selectSSHKey(sshKeys, onSelect) {
 
     modalContent.appendChild(form);
 
-    const buttonContainer = document.createElement("div");
-    buttonContainer.classList.add("button-container");
+    // Add buttons
+    const buttonContainer = document.createElement('div');
+    buttonContainer.style.display = 'flex';
+    buttonContainer.style.justifyContent = 'space-between';
+    buttonContainer.style.marginTop = '20px';
 
-    const cancelButton = document.createElement("button");
-    cancelButton.textContent = "Cancel";
-    cancelButton.classList.add("cancel-button");
-    cancelButton.addEventListener("click", () => document.body.removeChild(modal));
+    const cancelButton = document.createElement('button');
+    cancelButton.textContent = 'Cancel';
+    cancelButton.style.padding = '10px 20px';
+    cancelButton.style.backgroundColor = '#e74c3c';
+    cancelButton.style.color = '#fff';
+    cancelButton.style.border = 'none';
+    cancelButton.style.borderRadius = '5px';
+    cancelButton.style.cursor = 'pointer';
+    cancelButton.addEventListener('click', () => {
+        document.body.removeChild(modal);
+    });
 
-    const confirmButton = document.createElement("button");
-    confirmButton.textContent = "Confirm";
-    confirmButton.classList.add("confirm-button");
-    confirmButton.addEventListener("click", () => {
+    const confirmButton = document.createElement('button');
+    confirmButton.textContent = 'Confirm';
+    confirmButton.style.padding = '10px 20px';
+    confirmButton.style.backgroundColor = '#2ecc71';
+    confirmButton.style.color = '#fff';
+    confirmButton.style.border = 'none';
+    confirmButton.style.borderRadius = '5px';
+    confirmButton.style.cursor = 'pointer';
+    confirmButton.addEventListener('click', () => {
         const selectedKeyIndex = parseInt(form.sshKey.value, 10);
         if (isNaN(selectedKeyIndex)) {
-            alert("Please select a key.");
+            alert('Please select a key.');
             return;
         }
         const selectedKey = sshKeys[selectedKeyIndex];
-        if (!selectedKey?.content?.key) {
-            alert("Selected SSH key is invalid. Please try again.");
-            return;
-        }
         document.body.removeChild(modal);
-        onSelect(selectedKey);
+        onSelect(selectedKey); // Pass the selected key to the callback
     });
 
     buttonContainer.appendChild(cancelButton);
@@ -673,8 +686,6 @@ function selectSSHKey(sshKeys, onSelect) {
     modal.appendChild(modalContent);
     document.body.appendChild(modal);
 }
-
-
 
 
 
