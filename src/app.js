@@ -178,7 +178,7 @@ async function listInstances() {
     powerDialChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: ['Power Used', 'Remaining'],
+            labels: ['Active Power', 'Maximum Allowable Power'],
             datasets: [
                 {
                     data: [powerPercentage, 100 - powerPercentage],
@@ -347,33 +347,54 @@ async function listInstances() {
     nodeGrid.appendChild(card);
 }
 
-async function pingNode(ipv6, button, resultElement) {
+async function pingNode(ipv6, button) {
     if (!ipv6 || ipv6 === 'Unavailable') {
         alert('IPv6 address is unavailable for this node.');
         return;
     }
 
-    const spinnerHTML = `<span class="spinner"></span> Pinging...`;
-
-    // Show spinner
-    resultElement.style.display = 'block';
-    resultElement.innerHTML = spinnerHTML;
+    const pingResult = button.parentElement.nextElementSibling; // The <p class="ping-result">
+    pingResult.style.display = 'block';
+    pingResult.textContent = 'Pinging...';
 
     try {
-        const url = `http://[${ipv6}]:8080/status`;
-        const response = await fetch(url, { method: 'GET' });
+        const response = await fetch(`http://[${ipv6}]:8080/status`);
+        if (!response.ok) {
+            throw new Error(`Ping failed with status ${response.status}`);
+        }
 
-        if (response.ok) {
-            const data = await response.json();
-            resultElement.innerHTML = `<strong>Ping Success:</strong> ${JSON.stringify(data)}`;
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            const details = data.details
+                .replace(/\n+/g, '\n') // Replace multiple newlines with a single newline
+                .trim(); // Trim any leading or trailing whitespace
+
+            // Split the details into sections for formatting
+            const lines = details.split('\n').filter(line => line.trim() !== '');
+            let formattedDetails = '';
+
+            for (const line of lines) {
+                // Format workload status table-like data
+                if (line.startsWith('Name') || line.includes('founders') || line.includes('drng')) {
+                    const columns = line.split(/\s{2,}/).map(col => col.trim());
+                    formattedDetails += columns.join('   ') + '\n';
+                } else {
+                    // Add other sections as is
+                    formattedDetails += line + '\n';
+                }
+            }
+
+            pingResult.textContent = `Ping Success:\n${formattedDetails}`;
         } else {
-            resultElement.innerHTML = `<strong>Ping Failed:</strong> ${response.statusText}`;
+            pingResult.textContent = `Ping Failed: ${JSON.stringify(data)}`;
         }
     } catch (error) {
         console.error('Ping error:', error);
-        resultElement.innerHTML = `<strong>Ping Failed:</strong> ${error.message}`;
+        pingResult.textContent = `Ping Failed: ${error.message}`;
     }
 }
+
 
   
 
