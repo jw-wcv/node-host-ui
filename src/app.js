@@ -78,20 +78,18 @@ async function listInstances() {
     }
 
     try {
-        console.log("Fetching instances...");
         const walletAddress = alephClient.account.account?.address;
         if (!walletAddress) {
             console.warn("Wallet address is undefined.");
             return;
         }
 
-        // Fetch both INSTANCE and FORGET messages
+        // Fetch INSTANCE and FORGET messages
         const response = await alephClient.getMessages({
             types: ['INSTANCE', 'FORGET'],
             addresses: [walletAddress],
         });
 
-        // Clear the node grid
         nodeGrid.innerHTML = '';
 
         if (!response.messages || response.messages.length === 0) {
@@ -115,37 +113,36 @@ async function listInstances() {
             return;
         }
 
-        // Calculate total vCPUs and RAM used by active instances
         let totalCores = 0;
         let totalMemory = 0;
+
+        // Render valid instances
         for (const message of validInstances) {
-            const resources = message.content?.resources;
+            const { metadata, resources, time } = message.content || {};
+            const instanceId = message.item_hash;
+            const ipv6 = await fetchInstanceIp(instanceId);
+            const createdTime = new Date(time * 1000); // Convert UNIX time to Date
+            const uptime = calculateUptime(createdTime);
+
             if (resources) {
                 totalCores += resources.vcpus || 0;
                 totalMemory += resources.memory || 0;
             }
+
+            renderNode({
+                id: instanceId,
+                name: metadata?.name || null,
+                ipv6: ipv6 || 'Unavailable',
+                status: message.confirmed ? 'Running' : 'Pending',
+                uptime: uptime,
+            });
         }
 
         // Update Resource Usage section
         document.getElementById('totalCpu').textContent = `${totalCores} vCPUs`;
         document.getElementById('totalMemory').textContent = `${(totalMemory / 1024).toFixed(2)} GB`;
 
-        // Render valid instances
-        for (const message of validInstances) {
-            const instanceId = message.item_hash;
-            const metadata = message.content?.metadata || {};
-            const ipv6 = await fetchInstanceIp(instanceId);
-
-            renderNode({
-                id: instanceId,
-                name: metadata.name, // Use the name from metadata
-                ipv6: ipv6 || 'Unavailable',
-                status: message.confirmed ? 'Running' : 'Pending',
-                uptime: '0h 0m',
-            });
-        }
-
-        // Fetch wallet balance and update charts
+        // Update charts
         const balanceMatch = balanceDisplay.textContent.match(/Balance:\s([\d.]+)/);
         const balance = balanceMatch ? parseFloat(balanceMatch[1]) : 0;
         updatePowerDial(balance);
@@ -159,6 +156,24 @@ async function listInstances() {
 
 
 
+
+function calculateUptime(createdTime) {
+    const now = new Date();
+    const diffMs = now - createdTime;
+
+    const seconds = Math.floor((diffMs / 1000) % 60);
+    const minutes = Math.floor((diffMs / 1000 / 60) % 60);
+    const hours = Math.floor((diffMs / 1000 / 60 / 60) % 24);
+    const days = Math.floor(diffMs / 1000 / 60 / 60 / 24);
+
+    let uptime = '';
+    if (days > 0) uptime += `${days}d `;
+    if (hours > 0 || days > 0) uptime += `${hours}h `;
+    if (minutes > 0 || hours > 0 || days > 0) uptime += `${minutes}m `;
+    uptime += `${seconds}s`;
+
+    return uptime;
+}
 
 
   
@@ -348,6 +363,7 @@ function renderNode(node) {
 
     nodeGrid.appendChild(card);
 }
+
 
 
 async function pingNode(ipv6, button) {
