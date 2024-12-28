@@ -227,21 +227,29 @@ async function listInstances() {
         availableComputeChart.destroy();
     }
 
+    // Define bar colors dynamically
+    const runningColors = compute.map(tier =>
+        tier.cores <= runningVMs ? '#2196f3' : '#b0bec5' // Blue for available, Grey for unavailable
+    );
+    const availableColors = compute.map(tier =>
+        tier.available > 0 ? '#ff9800' : '#b0bec5' // Orange for available, Grey for unavailable
+    );
+
     availableComputeChart = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: compute.map((tier) => `${tier.cores} cores / ${tier.ram}GB RAM`),
+            labels: compute.map(tier => `${tier.cores} cores / ${tier.ram}GB RAM`),
             datasets: [
                 {
                     label: 'Running VMs',
-                    data: compute.map((tier) => tier.cores <= runningVMs ? runningVMs : 0),
-                    backgroundColor: '#2196f3',
+                    data: compute.map(tier => tier.cores <= runningVMs ? runningVMs : 0),
+                    backgroundColor: runningColors,
                     borderRadius: 4,
                 },
                 {
                     label: 'Available VMs',
-                    data: compute.map((tier) => tier.available),
-                    backgroundColor: '#ff9800',
+                    data: compute.map(tier => tier.available),
+                    backgroundColor: availableColors,
                     borderRadius: 4,
                 },
             ],
@@ -297,8 +305,8 @@ async function listInstances() {
             },
         },
     });
-    
 }
+
 
   
 
