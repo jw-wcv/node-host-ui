@@ -556,6 +556,6 @@ function disconnectWallet() {
 connectWalletButton.addEventListener('click', connectWallet);
 
 document.querySelector('.create-node-button').addEventListener('click', createInstance);
-window.createSSHKey = createSSHKey;
+document.querySelector('.create-ssh-button').addEventListener('click', createSSHKey);
 
 
