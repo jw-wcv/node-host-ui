@@ -173,18 +173,23 @@ async function createSSHKey() {
         }
 
         // Request wallet connection and retrieve account
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
         const account = await getAccountFromProvider(window.ethereum);
+
+        console.log("Connected Account:", account);
 
         // Initialize Aleph client
         const alephClient = new AuthenticatedAlephHttpClient({
             account,
-            node_url: "https://api2.aleph.im",
+            node_url: "https://api2.aleph.im", // Ensure the node URL is correct
         });
 
         // Generate RSA key pair
         const keyPair = forge.pki.rsa.generateKeyPair({ bits: 4096 });
         const privateKeyPem = forge.pki.privateKeyToPem(keyPair.privateKey);
         const publicKeyPem = forge.pki.publicKeyToPem(keyPair.publicKey);
+
+        console.log("Generated Public Key:", publicKeyPem);
 
         // Prompt user for a label for the key
         const label = prompt("Enter a label for your SSH key:", "MySSHKey");
@@ -197,14 +202,14 @@ async function createSSHKey() {
         const message = await alephClient.createPost({
             content: {
                 type: "ALEPH-SSH",
-                address: account.address,
+                address: account.address, // Ensure this is correct
                 content: {
                     key: publicKeyPem,
                     label,
                 },
             },
             postType: "ssh-key",
-            channel: "MY_CHANNEL",
+            channel: alephChannel,
         });
 
         console.log("SSH Key Posted:", message);
@@ -221,10 +226,11 @@ async function createSSHKey() {
 
         alert("SSH Key created and saved successfully!");
     } catch (error) {
-        console.error("Error creating SSH Key:", error.message);
+        console.error("Error creating SSH Key:", error.message, error.stack);
         alert("An error occurred while creating the SSH key. Please try again.");
     }
 }
+
 
 
 function calculateUptime(createdTime) {
