@@ -325,16 +325,47 @@ async function listInstances() {
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
-      <h3 class="node-id">${node.id}</h3>
-      <p><strong>IPv6:</strong> ${node.ipv6}</p>
-      <p><strong>Status:</strong> ${node.status}</p>
-      <p><strong>Uptime:</strong> ${node.uptime}</p>
-      <div class="card-actions">
-        <button onclick="deleteNode('${node.id}')">Delete</button>
-      </div>
+        <h3 class="node-id">${node.id}</h3>
+        <p><strong>IPv6:</strong> ${node.ipv6}</p>
+        <p><strong>Status:</strong> ${node.status}</p>
+        <p><strong>Uptime:</strong> ${node.uptime}</p>
+        <div class="card-actions">
+            <button onclick="deleteNode('${node.id}')">Delete</button>
+            <button onclick="pingNode('${node.ipv6}', this)">Ping</button>
+        </div>
+        <p class="ping-result" style="display: none;"></p>
     `;
     nodeGrid.appendChild(card);
-  }
+}
+
+async function pingNode(ipv6, button) {
+    if (!ipv6 || ipv6 === 'Unavailable') {
+        alert('IPv6 address is unavailable for this node.');
+        return;
+    }
+
+    const pingResultElement = button.closest('.card').querySelector('.ping-result');
+    const spinnerHTML = `<span class="spinner"></span> Pinging...`;
+
+    // Show spinner
+    pingResultElement.style.display = 'block';
+    pingResultElement.innerHTML = spinnerHTML;
+
+    try {
+        const url = `http://[${ipv6}]:8080/status`;
+        const response = await fetch(url, { method: 'GET' });
+
+        if (response.ok) {
+            const data = await response.json();
+            pingResultElement.innerHTML = `<strong>Ping Success:</strong> ${JSON.stringify(data)}`;
+        } else {
+            pingResultElement.innerHTML = `<strong>Ping Failed:</strong> ${response.statusText}`;
+        }
+    } catch (error) {
+        console.error('Ping error:', error);
+        pingResultElement.innerHTML = `<strong>Ping Failed:</strong> ${error.message}`;
+    }
+}
   
 
 async function createInstance() {
