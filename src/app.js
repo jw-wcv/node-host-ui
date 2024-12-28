@@ -615,19 +615,56 @@ async function createInstance() {
 
 
 async function deleteNode(instanceId) {
-  try {
-    await alephClient.forget({
-      hashes: [instanceId],
-      reason: "User requested teardown",
-      channel: alephChannel,
-    });
+    try {
+        if (!window.ethereum) {
+            throw new Error("MetaMask not found. Please install it.");
+        }
 
-    alert(`Instance ${instanceId} deleted successfully!`);
-    await listInstances();
-  } catch (error) {
-    console.error("Error deleting instance:", error);
-  }
+        // Show confirmation dialog
+        const confirmed = confirm(`Are you sure you want to delete instance ${instanceId}?`);
+        if (!confirmed) return;
+
+        // Display loading spinner
+        const deleteButton = document.querySelector(`#delete-button-${instanceId}`);
+        if (deleteButton) {
+            deleteButton.disabled = true;
+            deleteButton.innerHTML = `<span class="spinner"></span> Deleting...`;
+        }
+
+        // Request wallet connection and retrieve account
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const account = await getAccountFromProvider(window.ethereum);
+
+        // Initialize Aleph client
+        const alephClient = new AuthenticatedAlephHttpClient(account);
+
+        // Log the instance ID being deleted
+        console.log(`Deleting instance with ID: ${instanceId}`);
+
+        // Send the forget message to Aleph
+        await alephClient.forget({
+            hashes: [instanceId],
+            reason: "User requested teardown",
+            channel: "ALEPH-CLOUDSOLUTIONS",
+        });
+
+        alert(`Instance ${instanceId} deleted successfully!`);
+
+        // Refresh the instance list
+        await listInstances();
+    } catch (error) {
+        console.error(`Error deleting instance ${instanceId}:`, error.message, error.stack);
+        alert("An error occurred while deleting the instance. Please try again.");
+    } finally {
+        // Remove spinner and re-enable the button
+        if (deleteButton) {
+            deleteButton.disabled = false;
+            deleteButton.innerHTML = `Delete`;
+        }
+    }
 }
+
+
 
 function disconnectWallet() {
   walletDisplay.textContent = 'Wallet: Not Connected';
