@@ -330,26 +330,34 @@ async function listInstances() {
         <p><strong>Status:</strong> ${node.status}</p>
         <p><strong>Uptime:</strong> ${node.uptime}</p>
         <div class="card-actions">
-            <button onclick="deleteNode('${node.id}')">Delete</button>
-            <button onclick="pingNode('${node.ipv6}', this)">Ping</button>
+            <button class="delete-button">Delete</button>
+            <button class="ping-button">Ping</button>
         </div>
         <p class="ping-result" style="display: none;"></p>
     `;
+
+    // Add event listeners
+    const deleteButton = card.querySelector('.delete-button');
+    const pingButton = card.querySelector('.ping-button');
+    const pingResultElement = card.querySelector('.ping-result');
+
+    deleteButton.addEventListener('click', () => deleteNode(node.id));
+    pingButton.addEventListener('click', () => pingNode(node.ipv6, pingButton, pingResultElement));
+
     nodeGrid.appendChild(card);
 }
 
-async function pingNode(ipv6, button) {
+async function pingNode(ipv6, button, resultElement) {
     if (!ipv6 || ipv6 === 'Unavailable') {
         alert('IPv6 address is unavailable for this node.');
         return;
     }
 
-    const pingResultElement = button.closest('.card').querySelector('.ping-result');
     const spinnerHTML = `<span class="spinner"></span> Pinging...`;
 
     // Show spinner
-    pingResultElement.style.display = 'block';
-    pingResultElement.innerHTML = spinnerHTML;
+    resultElement.style.display = 'block';
+    resultElement.innerHTML = spinnerHTML;
 
     try {
         const url = `http://[${ipv6}]:8080/status`;
@@ -357,15 +365,16 @@ async function pingNode(ipv6, button) {
 
         if (response.ok) {
             const data = await response.json();
-            pingResultElement.innerHTML = `<strong>Ping Success:</strong> ${JSON.stringify(data)}`;
+            resultElement.innerHTML = `<strong>Ping Success:</strong> ${JSON.stringify(data)}`;
         } else {
-            pingResultElement.innerHTML = `<strong>Ping Failed:</strong> ${response.statusText}`;
+            resultElement.innerHTML = `<strong>Ping Failed:</strong> ${response.statusText}`;
         }
     } catch (error) {
         console.error('Ping error:', error);
-        pingResultElement.innerHTML = `<strong>Ping Failed:</strong> ${error.message}`;
+        resultElement.innerHTML = `<strong>Ping Failed:</strong> ${error.message}`;
     }
 }
+
   
 
 async function createInstance() {
