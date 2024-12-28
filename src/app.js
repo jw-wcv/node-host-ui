@@ -664,7 +664,7 @@ function selectSSHKey(sshKeys, onSelect) {
             return;
         }
         const selectedKey = sshKeys[selectedKeyIndex];
-        if (!selectedKey?.content?.key) {
+        if (!selectedKey?.key) {
             alert("Selected SSH key is invalid. Please try again.");
             return;
         }
