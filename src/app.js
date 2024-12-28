@@ -18,6 +18,7 @@ let availableComputeChart;
 
 const alephChannel = "ALEPH-CLOUDSOLUTIONS";
 const alephNodeUrl = "https://46.255.204.193";
+const alephImage = "4a0f62da42f4478544616519e6f5d58adb1096e069b392b151d47c3609492d0c";
 
 // Pricing tiers for VMs
 const VM_TIERS = [
@@ -580,6 +581,13 @@ async function createInstance() {
             return;
         }
 
+        // Prompt user for a label for the key
+        const label = prompt("Enter a label for your VM:", "AlephVM");
+        if (!label) {
+            alert("Label is required to create a VM.");
+            return;
+        }
+
         // Request wallet connection and retrieve account
         await window.ethereum.request({ method: 'eth_requestAccounts' });
         const account = await getAccountFromProvider(window.ethereum);
@@ -590,10 +598,11 @@ async function createInstance() {
         // Create instance with the selected SSH key
         const instance = await alephClient.createInstance({
             authorized_keys: [selectedKey],
-            resources: { vcpus: 2, memory: 2048, seconds: 3600 },
+            resources: { vcpus: 1, memory: 2048, seconds: 3600 },
             payment: { chain: "ETH", type: "hold" },
-            channel: "ALEPH-CLOUDSOLUTIONS",
-            image: "4a0f62da42f4478544616519e6f5d58adb1096e069b392b151d47c3609492d0c",
+            channel: alephChannel,
+            metadata: { name: label },
+            image: alephImage,
             environment: {},
         });
 
