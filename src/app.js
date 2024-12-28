@@ -608,7 +608,7 @@ async function createInstance() {
 
 function selectSSHKey(sshKeys, onSelect) {
     // Ensure sshKeys have valid content
-    if (!Array.isArray(sshKeys) || sshKeys.some((key) => !key.content?.key)) {
+    if (!Array.isArray(sshKeys) || sshKeys.some((key) => !key?.key)) {
         alert("SSH key data is invalid. Please try again.");
         return;
     }
