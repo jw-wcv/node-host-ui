@@ -573,7 +573,7 @@ async function createInstance() {
             console.log('Selected SSH Key:', selectedKey);
 
             const instance = await alephClient.createInstance({
-                authorized_keys: [selectedKey.content.key],
+                authorized_keys: [selectedKey.key],
                 resources: { vcpus: 1, memory: 2048, seconds: 3600 },
                 payment: { chain: 'ETH', type: 'hold' },
                 channel: alephChannel,
