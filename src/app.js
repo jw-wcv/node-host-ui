@@ -183,17 +183,29 @@ async function listInstances() {
                 {
                     data: [powerPercentage, 100 - powerPercentage],
                     backgroundColor: ['#4caf50', '#cfd8dc'],
+                    borderWidth: 0,
                 },
             ],
         },
         options: {
             responsive: true,
+            maintainAspectRatio: true,
+            layout: {
+                padding: 10, // Adds spacing around the chart
+            },
             plugins: {
-                legend: { display: false },
-                tooltip: { callbacks: { label: () => `${powerPercentage.toFixed(2)}% Power` } },
+                legend: {
+                    display: false,
+                },
+                tooltip: {
+                    callbacks: {
+                        label: (context) => `${context.raw.toFixed(2)}% Power`,
+                    },
+                },
             },
         },
     });
+    
 }
 
 
@@ -224,25 +236,68 @@ async function listInstances() {
                     label: 'Running VMs',
                     data: compute.map((tier) => tier.cores <= runningVMs ? runningVMs : 0),
                     backgroundColor: '#2196f3',
+                    borderRadius: 4,
                 },
                 {
                     label: 'Available VMs',
                     data: compute.map((tier) => tier.available),
                     backgroundColor: '#ff9800',
+                    borderRadius: 4,
                 },
             ],
         },
         options: {
             responsive: true,
+            maintainAspectRatio: true,
+            layout: {
+                padding: 10, // Adds spacing around the chart
+            },
             plugins: {
-                legend: { display: true },
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        boxWidth: 12,
+                    },
+                },
             },
             scales: {
-                x: { title: { display: true, text: 'VM Tier' } },
-                y: { title: { display: true, text: 'VM Count' }, beginAtZero: true },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'VM Tier',
+                        font: {
+                            size: 14,
+                            weight: 'bold',
+                        },
+                    },
+                    ticks: {
+                        font: {
+                            size: 12,
+                        },
+                    },
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'VM Count',
+                        font: {
+                            size: 14,
+                            weight: 'bold',
+                        },
+                    },
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1, // Ensures the y-axis shows integers
+                        font: {
+                            size: 12,
+                        },
+                    },
+                },
             },
         },
     });
+    
 }
 
   

@@ -154,3 +154,14 @@ body {
   .footer a:hover {
     text-decoration: underline;
   }
+
+  .chart-container {
+    max-width: 600px;
+    max-height: 300px;
+    margin: 0 auto;
+}
+
+canvas {
+    width: 100% !important;
+    height: auto !important;
+}
