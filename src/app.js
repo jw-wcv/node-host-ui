@@ -180,14 +180,15 @@ async function createSSHKey() {
         console.log("Connected Account:", connectedAccount);
 
         // Initialize Aleph client
-        const testMetalephClient = new AuthenticatedAlephHttpClient(connectedAccount);
+        const alephClient = new AuthenticatedAlephHttpClient(connectedAccount);
 
         // Generate RSA key pair
         const keyPair = forge.pki.rsa.generateKeyPair({ bits: 4096 });
         const privateKeyPem = forge.pki.privateKeyToPem(keyPair.privateKey);
         const publicKeyPem = forge.pki.publicKeyToPem(keyPair.publicKey);
+        const publicKeyOpenSSH = forge.ssh.publicKeyToOpenSSH(keyPair.publicKey, "ALEPH_SERVICES");
 
-        console.log("Generated Public Key:", publicKeyPem);
+        console.log("Generated Public Key (OpenSSH):", publicKeyOpenSSH);
 
         // Prompt user for a label for the key
         const label = prompt("Enter a label for your SSH key:", "MySSHKey");
@@ -197,26 +198,17 @@ async function createSSHKey() {
         }
 
         // Post the public key to Aleph
-        /*
-        const message = await testMetalephClient.createPost({
-            content: { hello: "world" },
-            postType: "ssh-key",
-            channel: alephChannel,
-        });*/
-
-        const message = await testMetalephClient.createPost({
+        const message = await alephClient.createPost({
             content: {
                 type: "ALEPH-SSH",
                 content: {
-                    key: publicKeyPem,
+                    key: publicKeyOpenSSH,
                     label: label,
                 },
             },
             postType: "POST",
             channel: alephChannel,
         });
-
-        
 
         console.log("SSH Key Posted:", message);
 
@@ -236,6 +228,7 @@ async function createSSHKey() {
         alert("An error occurred while creating the SSH key. Please try again.");
     }
 }
+
 
 
 
