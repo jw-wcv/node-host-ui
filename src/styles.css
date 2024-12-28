@@ -273,23 +273,6 @@ canvas {
 }
 
 /* Responsive Adjustments */
-/* Responsive Adjustments for Large Screens */
-@media screen and (min-width: 1440px) {
-    .grid-container {
-        grid-template-columns: repeat(3, 1fr); /* Three columns for large screens */
-    }
-}
-
-@media screen and (min-width: 2560px) {
-    .dashboard {
-        width: 90%;
-    }
-
-    .grid-container {
-        grid-template-columns: repeat(4, 1fr); /* Four columns for ultra-wide screens */
-    }
-}
-
 /* Responsive Adjustments for Tablets and Mobiles */
 @media screen and (max-width: 1024px) {
     .navbar {
