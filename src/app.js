@@ -176,13 +176,11 @@ async function createSSHKey() {
         await window.ethereum.request({ method: 'eth_requestAccounts' });
         const account = await getAccountFromProvider(window.ethereum);
 
-        console.log("Connected Account:", account);
+        const connectedAccount = await getAccountFromProvider(window.ethereum);
+        console.log("Connected Account:", connectedAccount);
 
         // Initialize Aleph client
-        const alephClient = new AuthenticatedAlephHttpClient({
-            account,
-            node_url: "https://api2.aleph.im", // Ensure the node URL is correct
-        });
+        const testMetalephClient = new AuthenticatedAlephHttpClient(connectedAccoun);
 
         // Generate RSA key pair
         const keyPair = forge.pki.rsa.generateKeyPair({ bits: 4096 });
@@ -199,18 +197,21 @@ async function createSSHKey() {
         }
 
         // Post the public key to Aleph
-        const message = await alephClient.createPost({
-            content: {
-                type: "ALEPH-SSH",
-                address: account.address, // Ensure this is correct
-                content: {
-                    key: publicKeyPem,
-                    label,
-                },
-            },
+        const message = await testMetalephClient.createPost({
+            content: { hello: "world" },
             postType: "ssh-key",
             channel: alephChannel,
         });
+
+        /*
+        content: {
+            type: "ALEPH-SSH",
+            address: connectedAccount.address, // Ensure this is correct
+            content: {
+                key: publicKeyPem,
+                label,
+            },
+        }, */
 
         console.log("SSH Key Posted:", message);
 
