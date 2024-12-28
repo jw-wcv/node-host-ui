@@ -180,7 +180,7 @@ async function createSSHKey() {
         console.log("Connected Account:", connectedAccount);
 
         // Initialize Aleph client
-        const testMetalephClient = new AuthenticatedAlephHttpClient(connectedAccoun);
+        const testMetalephClient = new AuthenticatedAlephHttpClient(connectedAccount);
 
         // Generate RSA key pair
         const keyPair = forge.pki.rsa.generateKeyPair({ bits: 4096 });
