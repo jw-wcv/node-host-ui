@@ -2,6 +2,8 @@
 import { AuthenticatedAlephHttpClient } from '@aleph-sdk/client';
 import { ethers } from 'ethers';
 import './styles.css';
+import Chart from 'chart.js/auto';
+
 
 const walletDisplay = document.getElementById('walletDisplay');
 const balanceDisplay = document.getElementById('balanceDisplay');
@@ -9,9 +11,18 @@ const connectWalletButton = document.getElementById('connectWalletButton');
 const nodeGrid = document.getElementById('nodeGrid');
 
 let alephClient;
+let powerDialChart; 
+let availableComputeChart; 
 
 const alephChannel = "ALEPH-CLOUDSOLUTIONS";
 const alephNodeUrl = "https://46.255.204.193";
+
+// Pricing tiers for VMs
+const VM_TIERS = [
+    { cores: 1, ram: 2, cost: 2000 },
+    { cores: 2, ram: 4, cost: 4000 },
+    { cores: 4, ram: 8, cost: 8000 },
+  ];
 
 async function connectWallet() {
   if (!window.ethereum) {
@@ -68,8 +79,7 @@ async function listInstances() {
 
     try {
         console.log("Fetching instances...");
-        console.log("Aleph Client Object:");
-        console.dir(alephClient);
+        console.log("Aleph Client Object:", alephClient);
 
         const walletAddress = alephClient.account.account?.address;
         if (!walletAddress) {
@@ -95,22 +105,39 @@ async function listInstances() {
         }
 
         // Separate INSTANCE and FORGET messages
-        const instanceMessages = response.messages.filter(msg => msg.type === 'INSTANCE');
+        const instanceMessages = response.messages.filter((msg) => msg.type === 'INSTANCE');
         const forgetHashes = new Set(
             response.messages
-                .filter(msg => msg.type === 'FORGET')
-                .flatMap(msg => msg.content.hashes || [])
+                .filter((msg) => msg.type === 'FORGET')
+                .flatMap((msg) => msg.content.hashes || [])
         );
 
         console.log("FORGET hashes:", Array.from(forgetHashes));
 
         // Filter instances to exclude those with a matching FORGET message
-        const validInstances = instanceMessages.filter(msg => !forgetHashes.has(msg.item_hash));
+        const validInstances = instanceMessages.filter((msg) => !forgetHashes.has(msg.item_hash));
 
         if (validInstances.length === 0) {
             nodeGrid.innerHTML = '<p>No active instances found for this wallet.</p>';
             return;
         }
+
+        // Calculate total vCPUs and RAM used by active instances
+        let totalCores = 0;
+        let totalMemory = 0;
+        for (const message of validInstances) {
+            const resources = message.content?.resources;
+            if (resources) {
+                totalCores += resources.vcpus || 0;
+                totalMemory += resources.memory || 0;
+            }
+        }
+
+        console.log(`Total Cores: ${totalCores}, Total Memory: ${totalMemory} MB`);
+
+        // Update Resource Usage section
+        document.getElementById('totalCpu').textContent = `${totalCores} vCPUs`;
+        document.getElementById('totalMemory').textContent = `${(totalMemory / 1024).toFixed(2)} GB`;
 
         // Render valid instances
         for (const message of validInstances) {
@@ -125,14 +152,99 @@ async function listInstances() {
                 uptime: '0h 0m',
             });
         }
+
+        // Fetch wallet balance and update charts
+        const balanceMatch = balanceDisplay.textContent.match(/Balance:\s([\d.]+)/);
+        const balance = balanceMatch ? parseFloat(balanceMatch[1]) : 0;
+        updatePowerDial(balance);
+        updateAvailableComputeChart(totalCores, balance);
     } catch (error) {
-        console.error("Error fetching instances:", error);
-        nodeGrid.innerHTML = '<p>Error loading instances. Please try again later.</p>';
+        console.error("Error fetching instances:", error.message);
+        nodeGrid.innerHTML = '<p>Error loading instances. Please refresh or try again later.</p>';
     }
 }
 
 
+
+
   
+  function updatePowerDial(balance) {
+    const powerPercentage = Math.min((balance / 200000) * 100, 100); // Max 100%
+    const ctx = document.getElementById('powerDial').getContext('2d');
+    if (powerDialChart) {
+        powerDialChart.destroy();
+    }
+
+    powerDialChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Power Used', 'Remaining'],
+            datasets: [
+                {
+                    data: [powerPercentage, 100 - powerPercentage],
+                    backgroundColor: ['#4caf50', '#cfd8dc'],
+                },
+            ],
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: () => `${powerPercentage.toFixed(2)}% Power` } },
+            },
+        },
+    });
+}
+
+
+  // Calculate total VMs that can be purchased
+  function calculateAvailableCompute(balance) {
+    const availableCompute = VM_TIERS.map((tier) => ({
+      ...tier,
+      available: Math.floor(balance / tier.cost), // Calculate how many of each VM can be purchased
+    }));
+  
+    return availableCompute;
+  }
+  
+  // Update Available Compute Chart
+  function updateAvailableComputeChart(runningVMs, balance) {
+    const compute = calculateAvailableCompute(balance);
+    const ctx = document.getElementById('availableComputeChart').getContext('2d');
+    if (availableComputeChart) {
+        availableComputeChart.destroy();
+    }
+
+    availableComputeChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: compute.map((tier) => `${tier.cores} cores / ${tier.ram}GB RAM`),
+            datasets: [
+                {
+                    label: 'Running VMs',
+                    data: compute.map((tier) => tier.cores <= runningVMs ? runningVMs : 0),
+                    backgroundColor: '#2196f3',
+                },
+                {
+                    label: 'Available VMs',
+                    data: compute.map((tier) => tier.available),
+                    backgroundColor: '#ff9800',
+                },
+            ],
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: true },
+            },
+            scales: {
+                x: { title: { display: true, text: 'VM Tier' } },
+                y: { title: { display: true, text: 'VM Count' }, beginAtZero: true },
+            },
+        },
+    });
+}
+
   
 
   async function fetchInstanceIp(instanceId) {

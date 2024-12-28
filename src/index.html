@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Node Hosting Dashboard</title>
-  <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
   <div class="navbar">
@@ -20,6 +19,12 @@
     <div class="dashboard-header">
       <h1>Your Nodes</h1>
       <button class="action-button" onclick="createInstance()">+ Create New Node</button>
+    </div>
+
+    <!-- Metrics Section -->
+    <div class="metrics-container">
+      <canvas id="powerDial" width="150" height="150"></canvas>
+      <canvas id="availableComputeChart" width="400" height="200"></canvas>
     </div>
 
     <!-- Node Grid -->
