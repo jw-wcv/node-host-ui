@@ -355,7 +355,7 @@ async function pingNode(ipv6, button) {
 
     const pingResult = button.parentElement.nextElementSibling; // The <p class="ping-result">
     pingResult.style.display = 'block';
-    pingResult.textContent = 'Pinging...';
+    pingResult.innerHTML = '<span class="spinner"></span> Pinging...';
 
     try {
         const response = await fetch(`http://[${ipv6}]:8080/status`);
@@ -370,28 +370,54 @@ async function pingNode(ipv6, button) {
                 .replace(/\n+/g, '\n') // Replace multiple newlines with a single newline
                 .trim(); // Trim any leading or trailing whitespace
 
-            // Split the details into sections for formatting
             const lines = details.split('\n').filter(line => line.trim() !== '');
-            let formattedDetails = '';
+            let nodeDetails = '';
+            let workloadTable = `<table class="workload-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Version</th>
+                        <th>Status</th>
+                        <th>CPU (cores)</th>
+                        <th>Memory (bytes)</th>
+                        <th>Age</th>
+                        <th>Port(s)</th>
+                    </tr>
+                </thead>
+                <tbody>
+            `;
 
             for (const line of lines) {
-                // Format workload status table-like data
-                if (line.startsWith('Name') || line.includes('founders') || line.includes('drng')) {
+                if (line.startsWith('Node ID') || line.includes('Gala Node')) {
+                    // Add node details in a separate section
+                    nodeDetails += `<p>${line}</p>`;
+                } else if (line.startsWith('Name') || line.includes('drng') || line.includes('founders')) {
+                    // Format workload status as table rows
                     const columns = line.split(/\s{2,}/).map(col => col.trim());
-                    formattedDetails += columns.join('   ') + '\n';
-                } else {
-                    // Add other sections as is
-                    formattedDetails += line + '\n';
+                    workloadTable += `<tr>${columns.map(col => `<td>${col}</td>`).join('')}</tr>`;
                 }
             }
 
-            pingResult.textContent = `Ping Success:\n${formattedDetails}`;
+            workloadTable += '</tbody></table>';
+
+            pingResult.innerHTML = `
+                <div class="ping-success">
+                    <strong>Ping Success:</strong>
+                    <div class="node-details">
+                        ${nodeDetails}
+                    </div>
+                    <div class="workload-status">
+                        <h4>Workload Status:</h4>
+                        ${workloadTable}
+                    </div>
+                </div>
+            `;
         } else {
-            pingResult.textContent = `Ping Failed: ${JSON.stringify(data)}`;
+            pingResult.innerHTML = `<strong>Ping Failed:</strong> ${JSON.stringify(data)}`;
         }
     } catch (error) {
         console.error('Ping error:', error);
-        pingResult.textContent = `Ping Failed: ${error.message}`;
+        pingResult.innerHTML = `<strong>Ping Failed:</strong> ${error.message}`;
     }
 }
 
