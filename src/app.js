@@ -183,13 +183,12 @@ async function createSSHKey() {
         const alephClient = new AuthenticatedAlephHttpClient(connectedAccount);
 
         // Generate RSA key pair
-        const keyPair = forge.pki.rsa.generateKeyPair({ bits: 4096 });
-        const privateKeyPem = forge.pki.privateKeyToPem(keyPair.privateKey);
-        const publicKeyPem = forge.pki.publicKeyToPem(keyPair.publicKey);
-        const publicKeyOpenSSH = forge.ssh.publicKeyToOpenSSH(keyPair.publicKey, "ALEPH_SERVICES");
+        let keyPair = forge.pki.rsa.generateKeyPair({ bits: 4096 });
+        let privateKeyPem = forge.pki.privateKeyToPem(keyPair.privateKey);
+        let publicKeyOpenSSH = forge.ssh.publicKeyToOpenSSH(keyPair.publicKey, "ALEPH_SERVICES");
 
         // Prompt user for a label for the key
-        const label = prompt("Enter a label for your SSH key:", "MySSHKey");
+        const label = prompt("Enter a label for your SSH key:", "AlephHostingSSH");
         if (!label) {
             alert("Label is required to create an SSH key.");
             return;
@@ -211,9 +210,9 @@ async function createSSHKey() {
         console.log("SSH Key Posted:", message);
 
         // Allow user to download the private key
-        const blob = new Blob([privateKeyPem], { type: "text/plain" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
+        let blob = new Blob([privateKeyPem], { type: "text/plain" });
+        let url = URL.createObjectURL(blob);
+        let a = document.createElement("a");
         a.href = url;
         a.download = `${label}_private_key.pem`;
         document.body.appendChild(a);
@@ -224,6 +223,8 @@ async function createSSHKey() {
         URL.revokeObjectURL(url);
 
         // Clear private key details from memory
+        URL.revokeObjectURL(url); // Revoke the object URL
+        blob = null; // Clear the Blob object
         privateKeyPem = null; // Clear the private key PEM variable
         keyPair.privateKey = null; // Explicitly nullify the private key in the keyPair object
         keyPair.publicKey = null; // Clear the public key (optional)
