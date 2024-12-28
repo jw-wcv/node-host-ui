@@ -188,8 +188,6 @@ async function createSSHKey() {
         const publicKeyPem = forge.pki.publicKeyToPem(keyPair.publicKey);
         const publicKeyOpenSSH = forge.ssh.publicKeyToOpenSSH(keyPair.publicKey, "ALEPH_SERVICES");
 
-        console.log("Generated Public Key (OpenSSH):", publicKeyOpenSSH);
-
         // Prompt user for a label for the key
         const label = prompt("Enter a label for your SSH key:", "MySSHKey");
         if (!label) {
