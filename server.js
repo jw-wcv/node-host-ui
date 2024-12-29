@@ -40,6 +40,13 @@ const requestHandler = (req, res) => {
   if (req.method === 'POST' && req.url === '/configure-node') {
     let body = '';
 
+    console.log(`[INBOUND REQUEST] ${req.method} ${req.url} at ${new Date().toISOString()}`);
+
+    // Log headers
+    console.log(`[HEADERS]:`, JSON.stringify(req.headers, null, 2));
+
+    
+
     // Collect the POST data
     req.on('data', (chunk) => {
       body += chunk.toString();
