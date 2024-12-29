@@ -3,6 +3,7 @@ import { connectWallet, disconnectWallet } from './utils/wallet.js';
 import { listInstances, createInstance, deleteNode, configureNode, pingNode } from './utils/aleph.js';
 import { createSSHKey } from './utils/ssh.js';
 import { showWalletOverlay, hideWalletOverlay } from './utils/ui.js';
+import './styles.css';
 
 // UI elements
 const connectWalletButton = document.getElementById('connectWalletButton');
