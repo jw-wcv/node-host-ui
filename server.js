@@ -46,8 +46,6 @@ const requestHandler = (req, res) => {
     // Log headers
     console.log(`[HEADERS]:`, JSON.stringify(req.headers, null, 2));
 
-    
-
     // Collect the POST data
     req.on('data', (chunk) => {
       body += chunk.toString();
