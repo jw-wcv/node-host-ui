@@ -23,8 +23,6 @@ connectWalletButton.addEventListener('click', async () => {
     try {
         if (connectWalletButton.textContent === 'Connect Wallet') {
             await connectWallet();
-            hideWalletOverlay();
-            await listInstances();
         } else {
             await disconnectWallet();
         }
@@ -40,8 +38,6 @@ connectWalletButton.addEventListener('click', async () => {
 overlayConnectWalletButton.addEventListener('click', async () => {
     try {
         await connectWallet();
-        hideWalletOverlay();
-        await listInstances();
     } catch (error) {
         console.error('Error connecting wallet via overlay:', error);
         showWalletOverlay();
@@ -57,7 +53,6 @@ window.addEventListener('load', async () => {
         if (!walletConnected) {
             walletConnected = true; // Prevent duplicate calls
             await connectWallet();
-            await listInstances();
         }
     } catch (error) {
         console.warn('Wallet not connected on page load:', error);

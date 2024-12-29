@@ -1,6 +1,7 @@
 import { ethers } from 'ethers';
 import { initializeAlephClient, resetAlephClient } from './client.js';
 import { showWalletOverlay, hideWalletOverlay } from './ui.js';
+import { listInstances } from './aleph.js';
 
 // Connect wallet
 export async function connectWallet() {
@@ -36,6 +37,7 @@ export async function connectWallet() {
         connectWalletButton.textContent = 'Disconnect';
         connectWalletButton.onclick = disconnectWallet;
 
+        await listInstances();
         hideWalletOverlay();
     } catch (error) {
         console.error('Error connecting wallet:', error);
