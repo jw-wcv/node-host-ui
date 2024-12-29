@@ -612,8 +612,8 @@ async function getSSHKeys() {
                     msg.content.type === 'POST' &&
                     msg.content.content.type === 'ALEPH-SSH')
             .map((msg) => ({
-                key: msg.content.content.key,
-                label: msg.content.content.label || 'Unnamed Key',
+                key: msg.content.content.content.key,
+                label: msg.content.content.content.label || 'Unnamed Key',
                 time: msg.time,
             }));
 
