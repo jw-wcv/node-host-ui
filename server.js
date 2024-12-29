@@ -41,7 +41,6 @@ const requestHandler = (req, res) => {
     let body = '';
 
     console.log(`[INBOUND REQUEST] ${req.method} ${req.url} at ${new Date().toISOString()}`);
-    console.log(req.body)
 
     // Log headers
     console.log(`[HEADERS]:`, JSON.stringify(req.headers, null, 2));
@@ -53,7 +52,9 @@ const requestHandler = (req, res) => {
 
     req.on('end', async () => {
       try {
-        const { ipv6, privateKeyPath, gitRepo } = JSON.parse(body);
+        const parsedBody = JSON.parse(body); // Parse the JSON body
+        console.log('[PARSED BODY]:', parsedBody);
+        const { ipv6, privateKeyPath, gitRepo } = parsedBody
 
         if (!ipv6 || !privateKeyPath || !gitRepo) {
           res.writeHead(400, { 'Content-Type': 'application/json' });
