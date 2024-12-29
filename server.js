@@ -53,9 +53,7 @@ const requestHandler = (req, res) => {
     req.on('end', async () => {
       try {
         const parsedBody = JSON.parse(body); // Parse the JSON body
-        console.log('[PARSED BODY]:', parsedBody);
-        const { ipv6, privateKey, gitRepo } = parsedBody
-        console.log('[PARSED FIELDS]:', { ipv6, privateKey, gitRepo });
+        const { ipv6, privateKey, gitRepo } = parsedBody;
 
 
         if (!ipv6 || !privateKey || !gitRepo) {
@@ -63,17 +61,6 @@ const requestHandler = (req, res) => {
           res.end(JSON.stringify({ error: 'Missing required fields' }));
           return;
         }
-
-        // Validate and fix private key permissions
-        /*
-        try {
-          await validatePrivateKeyPermissions(privateKey);
-        } catch (validateErr) {
-          res.writeHead(500, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: validateErr.message }));
-          return;
-        }
-        */
 
         const conn = new Client();
 

@@ -628,7 +628,6 @@ async function getSSHKeys() {
     }
 }
 
-
 async function createInstance() {
     try {
         const sshKeys = await getSSHKeys(); // Fetch available SSH keys
@@ -637,18 +636,18 @@ async function createInstance() {
             return;
         }
 
-        // Prompt user for a label for the key
-        const label = prompt("Enter a label for your VM:", "AlephVM");
-        if (!label) {
-            alert("Label is required to create a VM.");
-            return;
-        }
-
         // Call the radio button-based selection function
         selectSSHKey(sshKeys, async (selectedKey) => {
             console.log("Selected SSH Key:", selectedKey);
 
             try {
+                // Prompt user for a label for the key
+                const label = prompt("Enter a label for your VM:", "AlephVM");
+                if (!label) {
+                    alert("Label is required to create a VM.");
+                    return;
+                }
+
                 // Create a new instance
                 const instance = await alephClient.createInstance({
                     authorized_keys: [selectedKey.key],
@@ -756,9 +755,6 @@ function selectSSHKey(sshKeys, onSelect) {
     document.body.appendChild(modal);
 }
 
-
-
-
 async function deleteNode(instanceId) {
     try {
         if (!window.ethereum) {
@@ -790,7 +786,7 @@ async function deleteNode(instanceId) {
         await alephClient.forget({
             hashes: [instanceId],
             reason: "User requested teardown",
-            channel: "ALEPH-CLOUDSOLUTIONS",
+            channel: alephChannel,
         });
 
         alert(`Instance ${instanceId} deleted successfully!`);
