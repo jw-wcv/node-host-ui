@@ -16,6 +16,8 @@ let alephClient;
 let powerDialChart; 
 let availableComputeChart; 
 
+let createNodeInProgress = false;
+
 const alephChannel = "ALEPH-CLOUDSOLUTIONS";
 const alephNodeUrl = "https://46.255.204.193";
 const alephImage = "4a0f62da42f4478544616519e6f5d58adb1096e069b392b151d47c3609492d0c";
@@ -626,54 +628,48 @@ async function getSSHKeys() {
 }
 
 async function createInstance() {
+    if (createNodeInProgress) return;
+    createNodeInProgress = true;
+
     try {
-        const sshKeys = await getSSHKeys(); // Fetch available SSH keys
-        console.log(sshKeys);
+        const sshKeys = await getSSHKeys();
         if (sshKeys.length === 0) {
             alert('No SSH keys available. Please create one first.');
             return;
         }
 
-        // Call the radio button-based selection function
+        // Remove duplicate modal if it exists
+        const existingModal = document.querySelector(".modal-backdrop");
+        if (existingModal) {
+            document.body.removeChild(existingModal);
+        }
+
+        // Show SSH key selection modal
         selectSSHKey(sshKeys, async (selectedKey) => {
-            try {
-                // Prompt user for a label for the key
-                const label = prompt("Enter a label for your VM:", "AlephVM");
-                if (!label) {
-                    alert("Label is required to create a VM.");
-                    return;
-                }
-
-                // Create a new instance
-                const instance = await alephClient.createInstance({
-                    authorized_keys: [selectedKey.key],
-                    resources: { vcpus: 1, memory: 2048, seconds: 3600 },
-                    payment: { chain: "ETH", type: "hold" },
-                    channel: alephChannel,
-                    metadata: { name: label },
-                    image: alephImage,
-                    environment: {},
-                });
-
-                alert(`Instance ${instance.item_hash} created successfully!`);
-
-                try {
-                    // Refresh the instance list
-                    await listInstances();
-                    console.log("DApp refreshed successfully.");
-                } catch (refreshError) {
-                    console.error("Error refreshing instances:", refreshError);
-                    alert("Instance created, but the list could not refresh. Please reload the page manually.");
-                }
-            } catch (error) {
-                console.error("Error creating instance:", error.message);
-                alert("An error occurred while creating the instance. Please try again.");
+            const label = prompt("Enter a label for your VM:", "AlephVM");
+            if (!label) {
+                alert("Label is required to create a VM.");
+                return;
             }
-        });
 
+            const instance = await alephClient.createInstance({
+                authorized_keys: [selectedKey.key],
+                resources: { vcpus: 1, memory: 2048, seconds: 3600 },
+                payment: { chain: "ETH", type: "hold" },
+                channel: alephChannel,
+                metadata: { name: label },
+                image: alephImage,
+                environment: {},
+            });
+
+            alert(`Instance ${instance.item_hash} created successfully!`);
+            await listInstances();
+        });
     } catch (error) {
-        console.error('Error creating instance:', error.message);
+        console.error('Error creating instance:', error);
         alert('An error occurred while creating the instance. Please try again.');
+    } finally {
+        createNodeInProgress = false;
     }
 }
 
