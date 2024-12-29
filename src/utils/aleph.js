@@ -1,10 +1,8 @@
 import { alephClient, initializeAlephClient } from './client.js'; // Centralized client management
 import { getSSHKeys, selectSSHKey } from './ssh.js'; // SSH key-related functions
 import { calculateUptime, updatePowerDial, updateAvailableComputeChart } from './metrics.js'; // Metrics utilities
-import { nodeGrid } from './ui.js'; // UI elements and helpers
+import { clearNodeGrid, showLoadingSpinner, nodeGrid  } from './ui.js'; // UI elements and helpers
 import { alephChannel, alephNodeUrl, alephImage } from '../resources/constants.js';
-
-
 
 let createNodeInProgress = false; // Prevent simultaneous node creation
 
@@ -44,91 +42,100 @@ export function renderNode(node) {
  */
 export async function listInstances() {
     if (!alephClient) {
-        console.error("Aleph client not initialized.");
-        return;
+      console.error("Aleph client not initialized.");
+      return;
     }
-
+  
+    if (!nodeGrid) {
+      console.error("Error: 'nodeGrid' element is not found in the DOM.");
+      return;
+    }
+  
     try {
-        const walletAddress = alephClient.account?.address;
-        if (!walletAddress) {
-            console.warn("Wallet address is undefined.");
-            return;
+      const walletAddress = alephClient.account?.address;
+      if (!walletAddress) {
+        console.warn("Wallet address is undefined.");
+        nodeGrid.innerHTML = '<p>Error: Wallet address is not available.</p>';
+        return;
+      }
+  
+      console.log("Fetching instances for wallet:", walletAddress);
+  
+      showLoadingSpinner(3); // Show temporary loading spinners
+  
+      // Fetch INSTANCE and FORGET messages
+      const response = await alephClient.getMessages({
+        types: ['INSTANCE', 'FORGET'],
+        addresses: [walletAddress],
+      });
+  
+      clearNodeGrid(); // Clear loading spinners after fetching
+  
+      console.log("Raw API response:", response.messages);
+  
+      if (!response.messages || response.messages.length === 0) {
+        console.warn("No instances found.");
+        nodeGrid.innerHTML = '<p>No instances found for this wallet.</p>';
+        return;
+      }
+  
+      const instanceMessages = response.messages.filter((msg) => msg.type === 'INSTANCE');
+      const forgetHashes = new Set(
+        response.messages
+          .filter((msg) => msg.type === 'FORGET')
+          .flatMap((msg) => msg.content.hashes || [])
+      );
+  
+      const validInstances = instanceMessages.filter((msg) => !forgetHashes.has(msg.item_hash));
+  
+      console.log("Valid instances:", validInstances);
+  
+      if (validInstances.length === 0) {
+        console.warn("No valid instances found.");
+        nodeGrid.innerHTML = '<p>No active instances found for this wallet.</p>';
+        return;
+      }
+  
+      let totalCores = 0;
+      let totalMemory = 0;
+      let totalCost = 0;
+  
+      for (const message of validInstances) {
+        const { metadata, resources, time } = message.content || {};
+        const instanceId = message.item_hash;
+        const ipv6 = await fetchInstanceIp(instanceId);
+        const createdTime = new Date(time * 1000);
+        const uptime = calculateUptime(createdTime);
+  
+        console.log("Rendering node:", { instanceId, metadata, resources, ipv6 });
+  
+        if (resources) {
+          totalCores += resources.vcpus || 0;
+          totalMemory += resources.memory || 0;
+          totalCost += resources.vcpus * 1000; // Example cost calculation
         }
-
-        console.log("Fetching instances for wallet:", walletAddress);
-
-        // Fetch INSTANCE and FORGET messages
-        const response = await alephClient.getMessages({
-            types: ['INSTANCE', 'FORGET'],
-            addresses: [walletAddress],
+  
+        renderNode({
+          id: instanceId,
+          name: metadata?.name || null,
+          ipv6: ipv6 || 'Unavailable',
+          status: message.confirmed ? 'Running' : 'Pending',
+          uptime: uptime,
         });
-
-        console.log("Raw API response:", response.messages);
-
-        nodeGrid.innerHTML = '';
-
-        if (!response.messages || response.messages.length === 0) {
-            console.warn("No instances found.");
-            nodeGrid.innerHTML = '<p>No instances found for this wallet.</p>';
-            return;
-        }
-
-        const instanceMessages = response.messages.filter((msg) => msg.type === 'INSTANCE');
-        const forgetHashes = new Set(
-            response.messages
-                .filter((msg) => msg.type === 'FORGET')
-                .flatMap((msg) => msg.content.hashes || [])
-        );
-
-        const validInstances = instanceMessages.filter((msg) => !forgetHashes.has(msg.item_hash));
-
-        console.log("Valid instances:", validInstances);
-
-        if (validInstances.length === 0) {
-            console.warn("No valid instances found.");
-            nodeGrid.innerHTML = '<p>No active instances found for this wallet.</p>';
-            return;
-        }
-
-        let totalCores = 0;
-        let totalMemory = 0;
-        let totalCost = 0;
-
-        for (const message of validInstances) {
-            const { metadata, resources, time } = message.content || {};
-            const instanceId = message.item_hash;
-            const ipv6 = await fetchInstanceIp(instanceId);
-            const createdTime = new Date(time * 1000);
-            const uptime = calculateUptime(createdTime);
-
-            console.log("Rendering node:", { instanceId, metadata, resources, ipv6 });
-
-            if (resources) {
-                totalCores += resources.vcpus || 0;
-                totalMemory += resources.memory || 0;
-                totalCost += resources.vcpus * 1000; // Example cost calculation
-            }
-
-            renderNode({
-                id: instanceId,
-                name: metadata?.name || null,
-                ipv6: ipv6 || 'Unavailable',
-                status: message.confirmed ? 'Running' : 'Pending',
-                uptime: uptime,
-            });
-        }
-
-        document.getElementById('totalCpu').textContent = `${totalCores} vCPUs`;
-        document.getElementById('totalMemory').textContent = `${(totalMemory / 1024).toFixed(2)} GB`;
-
-        // Update metrics and charts
-        updatePowerDial(totalCost);
-        updateAvailableComputeChart(totalCores, totalCost);
+      }
+  
+      document.getElementById('totalCpu').textContent = `${totalCores} vCPUs`;
+      document.getElementById('totalMemory').textContent = `${(totalMemory / 1024).toFixed(2)} GB`;
+  
+      // Update metrics and charts
+      updatePowerDial(totalCost);
+      updateAvailableComputeChart(totalCores, totalCost);
     } catch (error) {
-        console.error("Error listing instances:", error.message);
-        nodeGrid.innerHTML = '<p>Error loading instances. Please refresh or try again later.</p>';
+      console.error("Error listing instances:", error.message);
+      clearNodeGrid();
+      nodeGrid.innerHTML = '<p>Error loading instances. Please refresh or try again later.</p>';
     }
-}
+  }
 
 
 /**
