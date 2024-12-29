@@ -607,12 +607,7 @@ async function getSSHKeys() {
         });
 
         const sshKeys = response.messages
-            .filter(
-                (msg) =>
-                    msg.content.type === 'ALEPH-SSH' &&
-                    msg.content.content &&
-                    msg.content.content.key
-            )
+            .filter((msg) => msg.content.type === 'ALEPH-SSH')
             .map((msg) => ({
                 key: msg.content.content.key,
                 label: msg.content.content.label || 'Unnamed Key',
