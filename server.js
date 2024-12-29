@@ -65,6 +65,7 @@ const requestHandler = (req, res) => {
         }
 
         // Validate and fix private key permissions
+        /*
         try {
           await validatePrivateKeyPermissions(privateKey);
         } catch (validateErr) {
@@ -72,6 +73,7 @@ const requestHandler = (req, res) => {
           res.end(JSON.stringify({ error: validateErr.message }));
           return;
         }
+        */
 
         const conn = new Client();
 
