@@ -732,7 +732,8 @@ function selectSSHKey(sshKeys, onSelect) {
     const confirmButton = document.createElement("button");
     confirmButton.textContent = "Confirm";
     confirmButton.classList.add("confirm-button");
-    confirmButton.addEventListener("click", () => {
+    confirmButton.addEventListener("click", (event) => {
+        event.preventDefault(); // Prevent form submission and page reload
         const selectedKeyIndex = parseInt(form.sshKey.value, 10);
         if (isNaN(selectedKeyIndex)) {
             alert("Please select a key.");
@@ -743,8 +744,8 @@ function selectSSHKey(sshKeys, onSelect) {
             alert("Selected SSH key is invalid. Please try again.");
             return;
         }
-        document.body.removeChild(modal);
-        onSelect(selectedKey);
+        document.body.removeChild(modal); // Remove modal from the DOM
+        onSelect(selectedKey); // Pass the selected key to the callback
     });
 
     buttonContainer.appendChild(cancelButton);
@@ -754,6 +755,7 @@ function selectSSHKey(sshKeys, onSelect) {
     modal.appendChild(modalContent);
     document.body.appendChild(modal);
 }
+
 
 async function deleteNode(instanceId) {
     try {
