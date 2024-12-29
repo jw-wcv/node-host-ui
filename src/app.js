@@ -11,6 +11,9 @@ const walletDisplay = document.getElementById('walletDisplay');
 const balanceDisplay = document.getElementById('balanceDisplay');
 const connectWalletButton = document.getElementById('connectWalletButton');
 const nodeGrid = document.getElementById('nodeGrid');
+const walletOverlay = document.getElementById('walletOverlay');
+const overlayConnectWalletButton = document.getElementById('overlayConnectWalletButton');
+
 
 let alephClient;
 let powerDialChart; 
@@ -21,6 +24,13 @@ let createNodeInProgress = false;
 const alephChannel = "ALEPH-CLOUDSOLUTIONS";
 const alephNodeUrl = "https://46.255.204.193";
 const alephImage = "4a0f62da42f4478544616519e6f5d58adb1096e069b392b151d47c3609492d0c";
+
+// Check wallet connection on page load
+window.addEventListener('load', () => {
+    if (!alephClient) {
+      showWalletOverlay();
+    }
+  });
 
 // Pricing tiers for VMs
 const VM_TIERS = [
@@ -58,11 +68,19 @@ async function connectWallet() {
     connectWalletButton.textContent = 'Disconnect';
     connectWalletButton.onclick = disconnectWallet;
 
+     // Hide the wallet overlay
+     walletOverlay.classList.remove('visible');
+
     await listInstances();
   } catch (error) {
     console.error("Error connecting wallet:", error);
   }
 }
+
+// Show the overlay if the wallet is not connected
+function showWalletOverlay() {
+    walletOverlay.classList.add('visible');
+  }
 
 async function fetchTokenBalance(provider, address) {
   const tokenAddress = '0x27702a26126e0B3702af63Ee09aC4d1A084EF628';
