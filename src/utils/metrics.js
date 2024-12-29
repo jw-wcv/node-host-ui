@@ -1,6 +1,8 @@
 import Chart from 'chart.js/auto';
 import { VM_TIERS } from '../resources/data';
 
+let powerDialChart = null; // Declare the powerDialChart variable
+let availableComputeChart = null; // Declare the availableComputeChart variable
 
 export function calculateUptime(createdTime) {
     const now = new Date();
@@ -23,6 +25,8 @@ export function calculateUptime(createdTime) {
 export function updatePowerDial(balance) {
     const powerPercentage = Math.min((balance / 200000) * 100, 100); // Max 100%
     const ctx = document.getElementById('powerDial').getContext('2d');
+    
+    // Destroy existing chart instance if it exists
     if (powerDialChart) {
         powerDialChart.destroy();
     }
@@ -57,22 +61,24 @@ export function updatePowerDial(balance) {
             },
         },
     });
-    
 }
 
 // Calculate total VMs that can be purchased
 export function calculateAvailableCompute(balance) {
-const availableCompute = VM_TIERS.map((tier) => ({
-    ...tier,
-    available: Math.floor(balance / tier.cost), // Calculate how many of each VM can be purchased
-}));
+    const availableCompute = VM_TIERS.map((tier) => ({
+        ...tier,
+        available: Math.floor(balance / tier.cost), // Calculate how many of each VM can be purchased
+    }));
 
-return availableCompute;
+    return availableCompute;
 }
-  // Update Available Compute Chart
+
+// Update Available Compute Chart
 export function updateAvailableComputeChart(runningVMs, balance) {
     const compute = calculateAvailableCompute(balance);
     const ctx = document.getElementById('availableComputeChart').getContext('2d');
+
+    // Destroy existing chart instance if it exists
     if (availableComputeChart) {
         availableComputeChart.destroy();
     }
@@ -155,4 +161,4 @@ export function updateAvailableComputeChart(runningVMs, balance) {
             },
         },
     });
-} 
+}
