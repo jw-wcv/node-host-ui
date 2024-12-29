@@ -49,7 +49,7 @@ export async function listInstances() {
     }
 
     try {
-        const walletAddress = alephClient.account.account?.address;
+        const walletAddress = alephClient.account?.address;
         if (!walletAddress) {
             console.warn("Wallet address is undefined.");
             return;
