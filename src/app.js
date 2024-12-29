@@ -444,60 +444,40 @@ function renderNode(node) {
 
 async function configureNode(ipv6, nodeId) {
     try {
-        // Prompt the user to upload the private key
         const privateKey = await requestPrivateKey();
         if (!privateKey) {
             alert("Private key is required to configure the node.");
             return;
         }
 
-        // Prompt the user for the Git repository URL
         const gitRepo = prompt("Enter the Git repository URL to clone:");
         if (!gitRepo) {
             alert("Git repository URL is required.");
             return;
         }
 
-        // Write the private key to a temporary file
-        const tempKeyFile = './temp_ssh_key.pem';
-        await fs.promises.writeFile(tempKeyFile, privateKey, { mode: 0o600 });
-
-        // Perform SSH and configuration
-        const sshCommand = `
-            ssh -i ${tempKeyFile} root@${ipv6} <<EOF
-            echo "Starting configuration on ${ipv6}...";
-            git clone ${gitRepo};
-            repoName=$(basename ${gitRepo} .git);
-            cd $repoName;
-            chmod +x bootstrap.sh;
-            ./bootstrap.sh;
-            echo "Configuration complete.";
-            EOF
-        `;
-
-        console.log("Executing SSH command:", sshCommand);
-
-        // Execute the SSH command
-        const { exec } = require("child_process");
-        exec(sshCommand, (error, stdout, stderr) => {
-            if (error) {
-                console.error("Error during SSH execution:", error.message);
-                alert("Failed to configure the node. Check the console for details.");
-                return;
-            }
-            console.log("SSH Command Output:", stdout);
-            alert("Node configuration completed successfully!");
+        const response = await fetch('/configure-node', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ipv6, privateKey, gitRepo }),
         });
 
-        // Securely delete the temporary private key file
-        await fs.promises.unlink(tempKeyFile);
-        console.log("Temporary key file deleted.");
+        if (!response.ok) {
+            const error = await response.json();
+            console.error('Error configuring the node:', error);
+            alert('Failed to configure the node. Check the console for details.');
+            return;
+        }
+
+        const result = await response.json();
+        console.log('Node configured successfully:', result);
         alert(`Configuration process initiated for node: ${nodeId}. Check the logs.`);
     } catch (error) {
-        console.error("Error configuring the node:", error.message, error.stack);
-        alert("An error occurred while configuring the node. Please try again.");
+        console.error('Error configuring the node:', error.message);
+        alert('An error occurred while configuring the node. Please try again.');
     }
 }
+
 
 
 async function requestPrivateKey() {
