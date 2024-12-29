@@ -458,13 +458,17 @@ async function configureNode(ipv6, nodeId) {
             return;
         }
 
+        // Write the private key to a temporary file
+        const tempKeyFile = './temp_ssh_key.pem';
+        await fs.promises.writeFile(tempKeyFile, privateKey, { mode: 0o600 });
+
         // Perform SSH and configuration
         const sshCommand = `
-            ssh -i "${privateKey}" root@${ipv6} <<EOF
+            ssh -i ${tempKeyFile} root@${ipv6} <<EOF
             echo "Starting configuration on ${ipv6}...";
             git clone ${gitRepo};
-            repoName=\$(basename ${gitRepo} .git);
-            cd \$repoName;
+            repoName=$(basename ${gitRepo} .git);
+            cd $repoName;
             chmod +x bootstrap.sh;
             ./bootstrap.sh;
             echo "Configuration complete.";
@@ -473,13 +477,28 @@ async function configureNode(ipv6, nodeId) {
 
         console.log("Executing SSH command:", sshCommand);
 
-        // Simulate SSH execution for the demo (replace this with actual backend or WebSocket call)
+        // Execute the SSH command
+        const { exec } = require("child_process");
+        exec(sshCommand, (error, stdout, stderr) => {
+            if (error) {
+                console.error("Error during SSH execution:", error.message);
+                alert("Failed to configure the node. Check the console for details.");
+                return;
+            }
+            console.log("SSH Command Output:", stdout);
+            alert("Node configuration completed successfully!");
+        });
+
+        // Securely delete the temporary private key file
+        await fs.promises.unlink(tempKeyFile);
+        console.log("Temporary key file deleted.");
         alert(`Configuration process initiated for node: ${nodeId}. Check the logs.`);
     } catch (error) {
-        console.error("Error configuring node:", error);
+        console.error("Error configuring the node:", error.message, error.stack);
         alert("An error occurred while configuring the node. Please try again.");
     }
 }
+
 
 async function requestPrivateKey() {
     return new Promise((resolve) => {
