@@ -22,7 +22,7 @@ connectWalletButton.addEventListener('click', async () => {
 
     try {
         if (connectWalletButton.textContent === 'Connect Wallet') {
-        //    await connectWallet();
+            await connectWallet();
         } else {
             await disconnectWallet();
         }
@@ -52,7 +52,7 @@ window.addEventListener('load', async () => {
     try {
         if (!walletConnected) {
             walletConnected = true; // Prevent duplicate calls
-        //    await connectWallet();
+            await connectWallet();
         }
     } catch (error) {
         console.warn('Wallet not connected on page load:', error);
