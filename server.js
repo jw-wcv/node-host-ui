@@ -110,7 +110,7 @@ const requestHandler = (req, res) => {
           .connect({
             host: ipv6,
             username: 'root',
-            privateKey: fs.readFileSync(privateKey),
+            privateKey: privateKey,
           });
       } catch (error) {
         console.error('Error parsing request body:', error);
