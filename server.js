@@ -80,6 +80,9 @@ const requestHandler = (req, res) => {
                 }
             
                 stream
+                  .on('data', (data) => {
+                    console.log('STDOUT:', data.toString());
+                  })
                   .on('close', (code, signal) => {
                     console.log(`Command finished with code ${code} and signal ${signal}`);
                     conn.end();
