@@ -723,7 +723,10 @@ function selectSSHKey(sshKeys, onSelect) {
     const cancelButton = document.createElement("button");
     cancelButton.textContent = "Cancel";
     cancelButton.classList.add("cancel-button");
-    cancelButton.addEventListener("click", () => document.body.removeChild(modal));
+    cancelButton.addEventListener("click", () => {
+        console.log("Cancel clicked. Removing modal.");
+        document.body.removeChild(modal);
+    });
 
     const confirmButton = document.createElement("button");
     confirmButton.textContent = "Confirm";
@@ -740,7 +743,13 @@ function selectSSHKey(sshKeys, onSelect) {
             alert("Selected SSH key is invalid. Please try again.");
             return;
         }
-        document.body.removeChild(modal); // Remove modal from the DOM
+
+        console.log("Confirm clicked. Selected key:", selectedKey);
+
+        // Remove the modal and call the callback
+        document.body.removeChild(modal);
+        console.log("Modal removed from DOM.");
+
         onSelect(selectedKey); // Pass the selected key to the callback
     });
 
@@ -750,7 +759,9 @@ function selectSSHKey(sshKeys, onSelect) {
 
     modal.appendChild(modalContent);
     document.body.appendChild(modal);
+    console.log("Modal added to DOM.");
 }
+
 
 
 async function deleteNode(instanceId) {
