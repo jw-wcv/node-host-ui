@@ -41,6 +41,7 @@ const requestHandler = (req, res) => {
     let body = '';
 
     console.log(`[INBOUND REQUEST] ${req.method} ${req.url} at ${new Date().toISOString()}`);
+    console.log(req.body)
 
     // Log headers
     console.log(`[HEADERS]:`, JSON.stringify(req.headers, null, 2));
