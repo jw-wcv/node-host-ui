@@ -55,15 +55,20 @@ export async function listInstances() {
             return;
         }
 
+        console.log("Fetching instances for wallet:", walletAddress);
+
         // Fetch INSTANCE and FORGET messages
         const response = await alephClient.getMessages({
             types: ['INSTANCE', 'FORGET'],
             addresses: [walletAddress],
         });
 
+        console.log("Raw API response:", response.messages);
+
         nodeGrid.innerHTML = '';
 
         if (!response.messages || response.messages.length === 0) {
+            console.warn("No instances found.");
             nodeGrid.innerHTML = '<p>No instances found for this wallet.</p>';
             return;
         }
@@ -77,6 +82,14 @@ export async function listInstances() {
 
         const validInstances = instanceMessages.filter((msg) => !forgetHashes.has(msg.item_hash));
 
+        console.log("Valid instances:", validInstances);
+
+        if (validInstances.length === 0) {
+            console.warn("No valid instances found.");
+            nodeGrid.innerHTML = '<p>No active instances found for this wallet.</p>';
+            return;
+        }
+
         let totalCores = 0;
         let totalMemory = 0;
         let totalCost = 0;
@@ -87,6 +100,8 @@ export async function listInstances() {
             const ipv6 = await fetchInstanceIp(instanceId);
             const createdTime = new Date(time * 1000);
             const uptime = calculateUptime(createdTime);
+
+            console.log("Rendering node:", { instanceId, metadata, resources, ipv6 });
 
             if (resources) {
                 totalCores += resources.vcpus || 0;
@@ -114,6 +129,7 @@ export async function listInstances() {
         nodeGrid.innerHTML = '<p>Error loading instances. Please refresh or try again later.</p>';
     }
 }
+
 
 /**
  * Fetches the IPv6 address for a specific Aleph instance.
