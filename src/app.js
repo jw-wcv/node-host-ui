@@ -852,6 +852,7 @@ function disconnectWallet() {
 }
 
 connectWalletButton.addEventListener('click', connectWallet);
+overlayConnectWalletButton.addEventListener('click', connectWallet);
 
 document.querySelector('.create-node-button').addEventListener('click', createInstance);
 document.querySelector('.create-ssh-button').addEventListener('click', createSSHKey);
