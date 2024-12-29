@@ -414,8 +414,20 @@ try {
 } 
 
 function renderNode(node) {
+    const nodeGrid = document.getElementById('nodeGrid');
+
+    // Check if a card for the node already exists
+    const existingCard = nodeGrid.querySelector(`.card[data-id="${node.id}"]`);
+    if (existingCard) {
+        console.log(`Node with ID ${node.id} already exists. Skipping duplicate rendering.`);
+        return;
+    }
+
+    // Create a new card
     const card = document.createElement('div');
     card.className = 'card';
+    card.setAttribute('data-id', node.id); // Add a unique identifier
+
     card.innerHTML = `
         <h3 class="node-id">${node.name || node.id}</h3>
         <p><strong>IPv6:</strong> ${node.ipv6}</p>
@@ -437,11 +449,12 @@ function renderNode(node) {
 
     deleteButton.addEventListener('click', () => deleteNode(node.id));
     pingButton.addEventListener('click', () => pingNode(node.ipv6, pingButton, pingResultElement));
-    configureButton.addEventListener('click', () => configureNode(node.ipv6, node.id)); // Add this line
+    configureButton.addEventListener('click', () => configureNode(node.ipv6, node.id));
 
-    const nodeGrid = document.getElementById('nodeGrid');
+    // Append the card to the grid
     nodeGrid.appendChild(card);
 }
+
 
 
 async function configureNode(ipv6, nodeId) {
