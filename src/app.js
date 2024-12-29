@@ -82,6 +82,10 @@ function showWalletOverlay() {
     walletOverlay.classList.add('visible');
   }
 
+  function hideWalletOverlay() {
+    walletOverlay.classList.remove('visible');
+  }
+
 async function fetchTokenBalance(provider, address) {
   const tokenAddress = '0x27702a26126e0B3702af63Ee09aC4d1A084EF628';
   const tokenABI = [
@@ -852,7 +856,10 @@ function disconnectWallet() {
 }
 
 connectWalletButton.addEventListener('click', connectWallet);
-overlayConnectWalletButton.addEventListener('click', connectWallet);
+overlayConnectWalletButton.addEventListener('click', async () => {
+    await connectWallet();
+    hideWalletOverlay(); // Hide overlay after wallet is connected
+  });
 
 document.querySelector('.create-node-button').addEventListener('click', createInstance);
 document.querySelector('.create-ssh-button').addEventListener('click', createSSHKey);
