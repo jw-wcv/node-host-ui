@@ -54,10 +54,8 @@ const requestHandler = (req, res) => {
       try {
         const parsedBody = JSON.parse(body); // Parse the JSON body
         console.log('[PARSED BODY]:', parsedBody);
-        const { ipv6, privateKeyPath, gitRepo } = parsedBody
-        console.log(ipv6);
-        console.log(privateKeyPath);
-        console.log(gitRepo);
+        const { ipv6, privateKey, gitRepo } = parsedBody
+        console.log('[PARSED FIELDS]:', { ipv6, privateKey, gitRepo });
 
 
         if (!ipv6 || !privateKeyPath || !gitRepo) {
