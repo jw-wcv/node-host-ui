@@ -68,7 +68,8 @@ const requestHandler = (req, res) => {
           .on('ready', () => {
             console.log('SSH Connection established.');
             conn.exec(
-              `git clone ${gitRepo} && cd $(basename ${gitRepo} .git) && chmod +x bootstrap.sh && ./bootstrap.sh`,
+              `export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get install -y git && \
+              git clone ${gitRepo} && cd $(basename ${gitRepo} .git) && chmod +x bootstrap.sh && ./bootstrap.sh`,
               (err, stream) => {
                 if (err) {
                   console.error('SSH Command error:', err);
@@ -77,7 +78,7 @@ const requestHandler = (req, res) => {
                   res.end(JSON.stringify({ error: 'Command execution failed' }));
                   return;
                 }
-
+            
                 stream
                   .on('close', (code, signal) => {
                     console.log(`Command finished with code ${code} and signal ${signal}`);
@@ -90,6 +91,7 @@ const requestHandler = (req, res) => {
                   });
               }
             );
+            
           })
           .on('error', (err) => {
             console.error('SSH Connection error:', err);
