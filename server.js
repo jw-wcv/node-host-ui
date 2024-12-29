@@ -58,7 +58,7 @@ const requestHandler = (req, res) => {
         console.log('[PARSED FIELDS]:', { ipv6, privateKey, gitRepo });
 
 
-        if (!ipv6 || !privateKeyPath || !gitRepo) {
+        if (!ipv6 || !privateKey || !gitRepo) {
           res.writeHead(400, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: 'Missing required fields' }));
           return;
@@ -66,7 +66,7 @@ const requestHandler = (req, res) => {
 
         // Validate and fix private key permissions
         try {
-          await validatePrivateKeyPermissions(privateKeyPath);
+          await validatePrivateKeyPermissions(privateKey);
         } catch (validateErr) {
           res.writeHead(500, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: validateErr.message }));
@@ -110,7 +110,7 @@ const requestHandler = (req, res) => {
           .connect({
             host: ipv6,
             username: 'root',
-            privateKey: fs.readFileSync(privateKeyPath),
+            privateKey: fs.readFileSync(privateKey),
           });
       } catch (error) {
         console.error('Error parsing request body:', error);
