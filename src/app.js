@@ -12,19 +12,27 @@ const createNodeButton = document.querySelector('.create-node-button');
 const createSSHButton = document.querySelector('.create-ssh-button');
 const nodeGrid = document.getElementById('nodeGrid');
 
+let walletConnected = false; // Track if already connected
+let isConnecting = false; // Prevent multiple clicks
+
 // Event listeners
 connectWalletButton.addEventListener('click', async () => {
+    if (isConnecting) return; // Skip if already connecting
+    isConnecting = true;
+
     try {
         if (connectWalletButton.textContent === 'Connect Wallet') {
             await connectWallet();
             hideWalletOverlay();
-            await listInstances(); // Refresh instances after connection
+            await listInstances();
         } else {
-            await disconnectWallet(); // Disconnect if already connected
+            await disconnectWallet();
         }
     } catch (error) {
         console.error('Error handling wallet button:', error);
         showWalletOverlay();
+    } finally {
+        isConnecting = false; // Reset the flag
     }
 });
 
@@ -46,8 +54,11 @@ createSSHButton.addEventListener('click', createSSHKey);
 // Check wallet connection on page load
 window.addEventListener('load', async () => {
     try {
-        await connectWallet();
-        await listInstances();
+        if (!walletConnected) {
+            walletConnected = true; // Prevent duplicate calls
+            await connectWallet();
+            await listInstances();
+        }
     } catch (error) {
         console.warn('Wallet not connected on page load:', error);
         showWalletOverlay();
