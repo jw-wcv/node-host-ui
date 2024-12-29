@@ -114,7 +114,7 @@ const requestHandler = (req, res) => {
   }
 
   // Serve static files for other requests
-  let filePath = path.join(PUBLIC_DIR, req.url === '/' ? 'index.html' : req.url);
+  let filePath = path.join(PUBLIC_DIR, req.url === '/' ? 'index.html' : req.url.replace(/^\/dist/, ''));
   const ext = path.extname(filePath);
 
   // Map file extension to MIME type

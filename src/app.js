@@ -456,6 +456,9 @@ async function configureNode(ipv6, nodeId) {
             return;
         }
 
+        console.log(ipv6);
+        console.log(privateKey);
+        console.log(gitRepo);
         const response = await fetch('/configure-node', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
