@@ -7,6 +7,31 @@ const { Client } = require('ssh2');
 const PUBLIC_DIR = path.join(__dirname, 'dist'); // Points to the dist directory
 const PORT = 8080;
 
+// Function to validate and fix private key permissions
+function validatePrivateKeyPermissions(filePath) {
+  return new Promise((resolve, reject) => {
+    fs.stat(filePath, (err, stats) => {
+      if (err) {
+        return reject(new Error(`Unable to access private key: ${err.message}`));
+      }
+
+      // Ensure the file is owned by the user and has 600 permissions
+      const mode = stats.mode & 0o777; // Extract permissions
+      if (mode !== 0o600) {
+        fs.chmod(filePath, 0o600, (chmodErr) => {
+          if (chmodErr) {
+            return reject(new Error(`Failed to set proper permissions on private key: ${chmodErr.message}`));
+          }
+          console.log(`Permissions for private key ${filePath} updated to 600.`);
+          resolve();
+        });
+      } else {
+        resolve(); // Permissions are already correct
+      }
+    });
+  });
+}
+
 // Define the request handler
 const requestHandler = (req, res) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
@@ -20,13 +45,22 @@ const requestHandler = (req, res) => {
       body += chunk.toString();
     });
 
-    req.on('end', () => {
+    req.on('end', async () => {
       try {
-        const { ipv6, privateKey, gitRepo } = JSON.parse(body);
+        const { ipv6, privateKeyPath, gitRepo } = JSON.parse(body);
 
-        if (!ipv6 || !privateKey || !gitRepo) {
+        if (!ipv6 || !privateKeyPath || !gitRepo) {
           res.writeHead(400, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: 'Missing required fields' }));
+          return;
+        }
+
+        // Validate and fix private key permissions
+        try {
+          await validatePrivateKeyPermissions(privateKeyPath);
+        } catch (validateErr) {
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: validateErr.message }));
           return;
         }
 
@@ -67,7 +101,7 @@ const requestHandler = (req, res) => {
           .connect({
             host: ipv6,
             username: 'root',
-            privateKey: privateKey,
+            privateKey: fs.readFileSync(privateKeyPath),
           });
       } catch (error) {
         console.error('Error parsing request body:', error);
