@@ -456,9 +456,6 @@ async function configureNode(ipv6, nodeId) {
             return;
         }
 
-        console.log(ipv6);
-        console.log(privateKey);
-        console.log(gitRepo);
         const response = await fetch('/configure-node', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -631,6 +628,7 @@ async function getSSHKeys() {
 async function createInstance() {
     try {
         const sshKeys = await getSSHKeys(); // Fetch available SSH keys
+        console.log(sshKeys);
         if (sshKeys.length === 0) {
             alert('No SSH keys available. Please create one first.');
             return;
@@ -638,8 +636,6 @@ async function createInstance() {
 
         // Call the radio button-based selection function
         selectSSHKey(sshKeys, async (selectedKey) => {
-            console.log("Selected SSH Key:", selectedKey);
-
             try {
                 // Prompt user for a label for the key
                 const label = prompt("Enter a label for your VM:", "AlephVM");
