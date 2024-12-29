@@ -2,9 +2,9 @@ import { alephClient, initializeAlephClient } from './client.js'; // Centralized
 import { getSSHKeys, selectSSHKey } from './ssh.js'; // SSH key-related functions
 import { calculateUptime, updatePowerDial, updateAvailableComputeChart } from './metrics.js'; // Metrics utilities
 import { nodeGrid } from './ui.js'; // UI elements and helpers
+import { alephChannel, alephNodeUrl, alephImage } from '../resources/constants.js';
 
-const alephChannel = "ALEPH-CLOUDSOLUTIONS";
-const alephImage = "4a0f62da42f4478544616519e6f5d58adb1096e069b392b151d47c3609492d0c";
+
 
 let createNodeInProgress = false; // Prevent simultaneous node creation
 

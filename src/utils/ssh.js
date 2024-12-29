@@ -1,6 +1,5 @@
 import { alephClient } from './auth';
-
-const alephChannel = "ALEPH-CLOUDSOLUTIONS";
+import { alephChannel, alephNodeUrl, alephImage } from '../resources/constants.js';
 
 export async function createSSHKey() {
     try {
