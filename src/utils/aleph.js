@@ -157,6 +157,10 @@ export async function listInstances() {
         renderNodes(nodes);
         */
 
+        // Clear placeholders after fetching data
+        clearNodeGrid();
+        resetCharts();
+
         const placeholderCard = document.createElement('div');
         placeholderCard.className = 'card';
         placeholderCard.innerHTML = `<p>Placeholder Node</p>`;
@@ -183,10 +187,7 @@ export async function listInstances() {
           });
       }
 
-        // Clear placeholders after fetching data
-        clearNodeGrid();
-        resetCharts();
-
+        
         // Update Resource Usage and Billing Information
         document.getElementById('totalCpu').textContent = `${totalCores} vCPUs`;
         document.getElementById('totalMemory').textContent = `${(totalMemory / 1024).toFixed(2)} GB`;
