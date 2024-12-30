@@ -232,9 +232,9 @@ export async function createInstance() {
   createNodeInProgress = true;
 
   try {
-      if (!alephClient) {
-          throw new Error("Aleph client is not initialized. Please connect your wallet first.");
-      }
+     // if (!alephClient) {
+     //     throw new Error("Aleph client is not initialized. Please connect your wallet first.");
+     // }
 
       console.log('Creating Instance');
 
