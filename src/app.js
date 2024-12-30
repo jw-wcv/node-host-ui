@@ -64,8 +64,28 @@ async function handleOverlayConnect() {
     }
 }
 
-createNodeButton.addEventListener('click', createInstance);
-createSSHButton.addEventListener('click', createSSHKey);
+createNodeButton.removeEventListener('click', handleCreateInstance);
+createNodeButton.addEventListener('click', handleCreateInstance);
+
+createSSHButton.removeEventListener('click', handleCreateSSHKey);
+createSSHButton.addEventListener('click', handleCreateSSHKey);
+
+// Wrapper functions to ensure single execution
+async function handleCreateInstance() {
+    try {
+        await createInstance();
+    } catch (error) {
+        console.error('Error creating instance:', error);
+    }
+}
+
+async function handleCreateSSHKey() {
+    try {
+        await createSSHKey();
+    } catch (error) {
+        console.error('Error creating SSH key:', error);
+    }
+}
 
 // Node actions (event delegation for dynamically added elements)
 nodeGrid.addEventListener('click', async (event) => {
