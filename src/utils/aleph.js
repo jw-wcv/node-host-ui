@@ -44,6 +44,7 @@ export function renderNode(node) {
           <button class="ping-button">Ping</button>
           <button class="configure-button">Configure</button>
       </div>
+      <p class="ping-result" style="display: none;"></p>
   `;
 
   // Append to the grid
