@@ -15,56 +15,56 @@ let isLoadingInstances = false; // Prevent duplicate calls
  * @param {Object} node - The node data to render.
  */
 export function renderNode(node) {
-    console.log("Rendering node:", node);
     if (!nodeGrid) {
-        console.error("Node grid is missing in the DOM.");
-        return;
+      console.error("Node grid is missing in the DOM.");
+      return;
     }
   
     // Check if the node card already exists
     const existingCard = nodeGrid.querySelector(`.card[data-id="${node.id}"]`);
     if (existingCard) {
-        console.log(`Node with ID ${node.id} already exists. Skipping duplicate rendering.`);
-        return;
+      console.log(`Node with ID ${node.id} already exists. Skipping duplicate rendering.`);
+      return;
     }
   
     // Determine status color class
     const statusClass = getStatusClass(node.status);
   
-    // Build the card
+    // Optionally build the IPv6 link if available
+    let ipv6LinkHtml = '';
+    if (node.ipv6 && node.ipv6.toLowerCase() !== 'unavailable') {
+      const ipv6Url = `http://[${node.ipv6}]:8080/`;
+      ipv6LinkHtml = `
+        <a href="${ipv6Url}" target="_blank" rel="noopener" class="ipv6-link-icon">
+          ↗
+        </a>
+      `;
+    }
+  
     const card = document.createElement('div');
     card.className = 'card';
     card.setAttribute('data-id', node.id);
   
-    // Construct IPv6 link using bracket syntax
-    const ipv6Url = `http://[${node.ipv6}]:8080/`;
-  
     card.innerHTML = `
-        <!-- The status indicator circle in the top-right corner -->
-        <div class="card-status-indicator ${statusClass}"></div>
+      <div class="card-status-indicator ${statusClass}"></div>
   
-        <h3 class="node-id">${node.name || node.id}</h3>
+      <h3 class="node-id">${node.name || node.id}</h3>
   
-        <p>
-          <strong>IPv6:</strong>
-          ${node.ipv6}
-          <!-- "arrow link" icon that opens the IPv6 in a new tab -->
-          <a href="${ipv6Url}" target="_blank" rel="noopener" class="ipv6-link-icon">
-            ↗
-          </a>
-        </p>
+      <p>
+        <strong>IPv6:</strong> ${node.ipv6}
+        ${ipv6LinkHtml}
+      </p>
   
-        <p><strong>Status:</strong> ${node.status}</p>
-        <p><strong>Uptime:</strong> ${node.uptime}</p>
-        <div class="card-actions">
-            <button class="delete-button">Delete</button>
-            <button class="ping-button">Ping</button>
-            <button class="configure-button">Configure</button>
-        </div>
-        <p class="ping-result" style="display: none;"></p>
+      <p><strong>Status:</strong> ${node.status}</p>
+      <p><strong>Uptime:</strong> ${node.uptime}</p>
+      <div class="card-actions">
+        <button class="delete-button">Delete</button>
+        <button class="ping-button">Ping</button>
+        <button class="configure-button">Configure</button>
+      </div>
+      <p class="ping-result" style="display: none;"></p>
     `;
   
-    // Append to the grid
     nodeGrid.appendChild(card);
     console.log(`Node card appended to grid: ${node.id}`);
   }
