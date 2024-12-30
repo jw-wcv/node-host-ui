@@ -90,14 +90,8 @@ async function listInstances() {
           return;
       }
 
-      // Filter valid instances
-      const validInstances = response.messages
-          .filter((msg) => msg.type === 'INSTANCE')
-          .filter((msg) => !response.messages.some(
-              (forgetMsg) =>
-                  forgetMsg.type === 'FORGET' &&
-                  forgetMsg.content.hashes.includes(msg.item_hash)
-          ));
+      // Filter valid instances using `filterValidNodes`
+      const validInstances = filterValidNodes(response.messages);
 
       if (validInstances.length === 0) {
           nodeGrid.innerHTML = '<p>No active instances found for this wallet.</p>';
@@ -109,22 +103,26 @@ async function listInstances() {
           validInstances.map((msg) => msg.content || {})
       );
 
-      // Render valid instances
-      for (const message of validInstances) {
+      // Prepare nodes for rendering
+      const nodes = validInstances.map((message) => {
           const { metadata, resources, time } = message.content || {};
           const instanceId = message.item_hash;
-          const ipv6 = await fetchInstanceIp(instanceId);
+          const ipv6 = fetchInstanceIp(instanceId);
           const createdTime = new Date(time * 1000); // Convert UNIX time to Date
           const uptime = calculateUptime(createdTime);
 
-          renderNode({
+          return {
               id: instanceId,
               name: metadata?.name || 'Unnamed',
               ipv6: ipv6 || 'Unavailable',
               status: message.confirmed ? 'Running' : 'Pending',
               uptime,
-          });
-      }
+          };
+      });
+
+      // Render all nodes using `renderNodes`
+      const resolvedNodes = await Promise.all(nodes); // Resolve all promises for IPv6
+      renderNodes(resolvedNodes);
 
       // Update Resource Usage and Billing Information
       document.getElementById('totalCpu').textContent = `${totalCores} vCPUs`;
@@ -142,6 +140,7 @@ async function listInstances() {
       nodeGrid.innerHTML = '<p>Error loading instances. Please refresh or try again later.</p>';
   }
 }
+
 
 
 /**
