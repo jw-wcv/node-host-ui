@@ -57,24 +57,28 @@ export function showPlaceholderCharts() {
  * @param {number} balance - The wallet balance in ALEPH.
  */
 export function updateCharts(totalCores, totalMemory, totalCost, balance) {
-    updatePowerDial(balance); // Update Power Dial Chart
-    updateAvailableComputeChart(totalCores, balance); // Update Available Compute Chart
+    console.log("Updating charts with:", { totalCores, totalMemory, totalCost, balance });
+
+    // Ensure the chart contexts exist
+    const powerDialCtx = document.getElementById('powerDial')?.getContext('2d');
+    const computeChartCtx = document.getElementById('availableComputeChart')?.getContext('2d');
+
+    if (!powerDialCtx || !computeChartCtx) {
+        console.error("Chart elements are missing in the DOM.");
+        return;
+    }
+
+    // Update Power Dial Chart
+    updatePowerDial(balance);
+
+    // Update Available Compute Chart
+    updateAvailableComputeChart(totalCores, balance);
 
     // Update Resource Usage display
     document.getElementById('totalCpu').textContent = `${totalCores} vCPUs`;
     document.getElementById('totalMemory').textContent = `${(totalMemory / 1024).toFixed(2)} GB`;
 }
 
-export function resetCharts() {
-    if (powerDialChart) {
-        powerDialChart.destroy();
-        powerDialChart = null;
-    }
-    if (availableComputeChart) {
-        availableComputeChart.destroy();
-        availableComputeChart = null;
-    }
-}
 
 /**
  * Calculate the cost for a node based on resources.

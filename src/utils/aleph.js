@@ -12,6 +12,10 @@ let isLoadingInstances = false; // Prevent duplicate calls
  * @param {Object} node - The node data to render.
  */
 export function renderNode(node) {
+    if (!nodeGrid) {
+      console.error('Node grid is missing in the DOM.');
+      return;
+    }
     const existingCard = nodeGrid.querySelector(`.card[data-id="${node.id}"]`);
     if (existingCard) {
         console.log(`Node with ID ${node.id} already exists. Skipping duplicate rendering.`);
@@ -96,6 +100,8 @@ export async function listInstances() {
       resetCharts();
 
       if (!response.messages || response.messages.length === 0) {
+          clearNodeGrid();
+          resetCharts();
           nodeGrid.innerHTML = '<p>No instances found for this wallet.</p>';
           return;
       }
@@ -104,6 +110,8 @@ export async function listInstances() {
       const validInstances = filterValidNodes(response.messages);
 
       if (validInstances.length === 0) {
+          clearNodeGrid();
+          resetCharts();
           nodeGrid.innerHTML = '<p>No active instances found for this wallet.</p>';
           return;
       }
@@ -147,7 +155,6 @@ export async function listInstances() {
       // Update charts
       const balanceMatch = balanceDisplay.textContent.match(/Balance:\s([\d.]+)/);
       const balance = balanceMatch ? parseFloat(balanceMatch[1]) : 0;
-      resetCharts();
       updatePowerDial(balance);
       updateAvailableComputeChart(totalCores, balance);
 
