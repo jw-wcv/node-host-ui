@@ -30,4 +30,15 @@ export function resetAlephClient() {
     account = null;
 }
 
+export async function ensureAlephClient() {
+    if (!alephClient) {
+        console.log("Aleph client is not initialized. Initializing...");
+        await initializeAlephClient(); // Initialize it if not done already
+    }
+    if (!alephClient) {
+        throw new Error("Failed to initialize Aleph client. Please connect your wallet.");
+    }
+}
+
+
 
