@@ -433,20 +433,23 @@ canvas {
     align-items: center;
     z-index: 1000;
 }
+
 .wallet-overlay-content {
     background-color: #16213e;
     color: #fff;
-    padding: 20px;
+    padding: 30px;
     border-radius: 10px;
-    width: 80%;
-    height: 80%;
+    width: 95%;  /* Set fixed width */
+    height: 88%;  /* Let the content define the height */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     text-align: center;
 }
+
 .wallet-overlay-content h2 {
     font-size: 1.5rem;
     margin-bottom: 20px;
 }
+
 .wallet-overlay-content button {
     background-color: #1f4068;
     color: #fff;
@@ -457,12 +460,15 @@ canvas {
     font-size: 1rem;
     transition: background-color 0.3s;
 }
+
 .wallet-overlay-content button:hover {
     background-color: #1b3b5f;
 }
+
 .wallet-overlay-content button:active {
     background-color: #142d4c;
 }
+
 
 /* ------------------------------------------------------ */
 /* 11. SPINNERS & LOADING                                 */
