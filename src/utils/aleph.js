@@ -12,41 +12,45 @@ let isLoadingInstances = false; // Prevent duplicate calls
  * @param {Object} node - The node data to render.
  */
 export function renderNode(node) {
-    if (!nodeGrid) {
-      console.error('Node grid is missing in the DOM.');
+  console.log("Rendering node:", node);
+  if (!nodeGrid) {
+      console.error("Node grid is missing in the DOM.");
       return;
-    }
-    const existingCard = nodeGrid.querySelector(`.card[data-id="${node.id}"]`);
-    if (existingCard) {
-        console.log(`Node with ID ${node.id} already exists. Skipping duplicate rendering.`);
-        return;
-    }
+  }
 
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.setAttribute('data-id', node.id);
+  // Check if the node card already exists
+  const existingCard = nodeGrid.querySelector(`.card[data-id="${node.id}"]`);
+  if (existingCard) {
+      console.log(`Node with ID ${node.id} already exists. Skipping duplicate rendering.`);
+      return;
+  }
 
-    card.innerHTML = `
-        <h3 class="node-id">${node.name || node.id}</h3>
-        <p><strong>IPv6:</strong> ${node.ipv6}</p>
-        <p><strong>Status:</strong> ${node.status}</p>
-        <p><strong>Uptime:</strong> ${node.uptime}</p>
-        <div class="card-actions">
-            <button class="delete-button">Delete</button>
-            <button class="ping-button">Ping</button>
-            <button class="configure-button">Configure</button>
-        </div>
-    `;
+  // Log before creating the card
+  console.log("Creating new card for node:", node);
 
-    // Append to the grid
-    nodeGrid.appendChild(card);
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.setAttribute('data-id', node.id);
+
+  card.innerHTML = `
+      <h3 class="node-id">${node.name || node.id}</h3>
+      <p><strong>IPv6:</strong> ${node.ipv6}</p>
+      <p><strong>Status:</strong> ${node.status}</p>
+      <p><strong>Uptime:</strong> ${node.uptime}</p>
+      <div class="card-actions">
+          <button class="delete-button">Delete</button>
+          <button class="ping-button">Ping</button>
+          <button class="configure-button">Configure</button>
+      </div>
+  `;
+
+  // Append to the grid
+  nodeGrid.appendChild(card);
+  console.log(`Node card appended to grid: ${node.id}`);
 }
 
-/**
- * Renders a list of nodes in the UI.
- * @param {Array} nodes - The list of node data to render.
- */
 export function renderNodes(nodes) {
+  console.log("Rendering nodes:", nodes);
   nodes.forEach((node) => renderNode(node));
 }
 
@@ -127,24 +131,35 @@ export async function listInstances() {
 
       // Prepare nodes for rendering
       const nodes = validInstances.map((message) => {
-          const { metadata, resources, time } = message.content || {};
-          const instanceId = message.item_hash;
-          const ipv6 = fetchInstanceIp(instanceId); // Returns a Promise
-          const createdTime = new Date(time * 1000); // Convert UNIX time to Date
-          const uptime = calculateUptime(createdTime);
-
-          return {
-              id: instanceId,
-              name: metadata?.name || 'Unnamed',
-              ipv6: ipv6 || 'Unavailable',
-              status: message.confirmed ? 'Running' : 'Pending',
-              uptime,
-          };
+        const { metadata, resources, time } = message.content || {};
+        const instanceId = message.item_hash;
+    
+        // Log the instance ID and resources
+        console.log("Preparing node:", { instanceId, resources });
+    
+        const ipv6 = fetchInstanceIp(instanceId); // Returns a Promise
+        const createdTime = new Date(time * 1000); // Convert UNIX time to Date
+        const uptime = calculateUptime(createdTime);
+    
+        // Log the node before returning
+        const node = {
+            id: instanceId,
+            name: metadata?.name || 'Unnamed',
+            ipv6: ipv6 || 'Unavailable',
+            status: message.confirmed ? 'Running' : 'Pending',
+            uptime,
+        };
+        console.log("Node prepared:", node);
+        return node;
       });
-
-      // Resolve all IPv6 fetches and render nodes
+      
+      // Resolve all IPv6 fetches
       const resolvedNodes = await Promise.all(nodes);
+      
+      // Log the resolved nodes
+      console.log("Resolved nodes:", resolvedNodes);
       renderNodes(resolvedNodes);
+    
 
       // Update Resource Usage and Billing Information
       document.getElementById('totalCpu').textContent = `${totalCores} vCPUs`;
@@ -182,7 +197,8 @@ export async function fetchInstanceIp(instanceId) {
         const response = await fetch(`https://scheduler.api.aleph.cloud/api/v0/allocation/${instanceId}`);
         if (!response.ok) throw new Error(`Failed to fetch IPv6 for instance ${instanceId}`);
         const data = await response.json();
-        return data.vm_ipv6 || null;
+        console.log(`Fetched IPv6 for ${instanceId}:`, data.vm_ipv6);
+        return data.vm_ipv6 || 'Unavailable';
     } catch (error) {
         console.error("Error fetching IPv6:", error.message);
         return null;
