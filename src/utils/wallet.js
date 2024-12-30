@@ -144,7 +144,7 @@ export async function disconnectWallet() {
   showWalletOverlay();
 
   try {
-    await disconnectWeb3Wallets();
+    // await disconnectWeb3Wallets();
     console.log('Web3 wallet disconnected successfully');
   } catch (error) {
     console.warn('Failed to disconnect Web3 wallet:', error);
