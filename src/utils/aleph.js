@@ -5,6 +5,7 @@ import { clearNodeGrid, showLoadingSpinner, nodeGrid  } from './ui.js'; // UI el
 import { alephChannel, alephNodeUrl, alephImage } from '../resources/constants.js';
 
 let createNodeInProgress = false; // Prevent simultaneous node creation
+let isLoadingInstances = false; // Prevent duplicate calls
 
 /**
  * Renders a node in the grid UI.
@@ -69,6 +70,9 @@ export async function listInstances() {
       console.error("Aleph client not initialized.");
       return;
   }
+
+  if (isLoadingInstances) return;
+    isLoadingInstances = true;
 
   try {
       const walletAddress = account.address;
@@ -143,6 +147,7 @@ export async function listInstances() {
       // Update charts
       const balanceMatch = balanceDisplay.textContent.match(/Balance:\s([\d.]+)/);
       const balance = balanceMatch ? parseFloat(balanceMatch[1]) : 0;
+      resetCharts();
       updatePowerDial(balance);
       updateAvailableComputeChart(totalCores, balance);
 
@@ -151,6 +156,7 @@ export async function listInstances() {
       nodeGrid.innerHTML = '<p>Error loading instances. Please refresh or try again later.</p>';
   } finally {
       // Ensure charts and spinners are cleared in case of errors
+      isLoadingInstances = false;
       resetCharts();
       clearNodeGrid();
   }

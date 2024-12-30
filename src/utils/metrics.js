@@ -8,6 +8,11 @@ export function showPlaceholderCharts() {
     const powerDialCtx = document.getElementById('powerDial').getContext('2d');
     const computeChartCtx = document.getElementById('availableComputeChart').getContext('2d');
 
+    if (!powerDialCtx || !computeChartCtx) {
+        console.error("Chart elements not found in the DOM.");
+        return;
+    }
+
     // Placeholder data
     const placeholderData = [50, 50];
     const labels = ['Loading...', ''];
@@ -61,8 +66,14 @@ export function updateCharts(totalCores, totalMemory, totalCost, balance) {
 }
 
 export function resetCharts() {
-    if (powerDialChart) powerDialChart.destroy();
-    if (availableComputeChart) availableComputeChart.destroy();
+    if (powerDialChart) {
+        powerDialChart.destroy();
+        powerDialChart = null;
+    }
+    if (availableComputeChart) {
+        availableComputeChart.destroy();
+        availableComputeChart = null;
+    }
 }
 
 /**

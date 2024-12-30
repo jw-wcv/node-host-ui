@@ -15,9 +15,14 @@ const nodeGrid = document.getElementById('nodeGrid');
 let walletConnected = false; // Track if already connected
 let isConnecting = false; // Prevent multiple clicks
 
-// Event listeners
-connectWalletButton.addEventListener('click', async () => {
-    if (isConnecting) return; // Skip if already connecting
+
+// Ensure there is no duplicate event listener for the "Connect Wallet" button
+connectWalletButton.removeEventListener('click', handleWalletConnect);
+connectWalletButton.addEventListener('click', handleWalletConnect);
+
+// Event handler function for wallet connection
+async function handleWalletConnect() {
+    if (isConnecting) return; // Prevent multiple concurrent connections
     isConnecting = true;
 
     try {
@@ -30,19 +35,28 @@ connectWalletButton.addEventListener('click', async () => {
         console.error('Error handling wallet button:', error);
         showWalletOverlay();
     } finally {
-        isConnecting = false; // Reset the flag
+        isConnecting = false; // Reset the connection flag
     }
-});
+}
 
+// Add a listener for the overlay "Connect Wallet" button
+overlayConnectWalletButton.removeEventListener('click', handleOverlayConnect);
+overlayConnectWalletButton.addEventListener('click', handleOverlayConnect);
 
-overlayConnectWalletButton.addEventListener('click', async () => {
+// Event handler function for overlay wallet connection
+async function handleOverlayConnect() {
+    if (isConnecting) return; // Prevent multiple concurrent connections
+    isConnecting = true;
+
     try {
         await connectWallet();
     } catch (error) {
         console.error('Error connecting wallet via overlay:', error);
         showWalletOverlay();
+    } finally {
+        isConnecting = false; // Reset the connection flag
     }
-});
+}
 
 createNodeButton.addEventListener('click', createInstance);
 createSSHButton.addEventListener('click', createSSHKey);
@@ -50,11 +64,7 @@ createSSHButton.addEventListener('click', createSSHKey);
 // Check wallet connection on page load
 window.addEventListener('load', async () => {
     try {
-        showWalletOverlay();
-        // if (!walletConnected) {
-           // walletConnected = true; // Prevent duplicate calls
-           // await connectWallet();
-       // }
+        if (!walletConnected) showWalletOverlay();
     } catch (error) {
         console.warn('Wallet not connected on page load:', error);
         showWalletOverlay();
