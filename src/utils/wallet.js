@@ -66,10 +66,8 @@ export async function disconnectWallet() {
     connectWalletButton.textContent = 'Connect Wallet';
     connectWalletButton.onclick = connectWallet;
 
-    // Reset Aleph client and node grid
-    resetAlephClient();
-
     // Clear UI
+    resetAlephClient();
     clearNodeGrid();
     resetCharts();
     showWalletOverlay();

@@ -2,7 +2,7 @@
 import { connectWallet, disconnectWallet } from './utils/wallet.js';
 import { createInstance, deleteNode, configureNode, pingNode } from './utils/aleph.js';
 import { createSSHKey } from './utils/ssh.js';
-import { showWalletOverlay, hideWalletOverlay } from './utils/ui.js';
+import { showWalletOverlay } from './utils/ui.js';
 import './styles.css';
 
 // UI elements
@@ -20,22 +20,26 @@ let isConnecting = false; // Prevent multiple clicks
 connectWalletButton.removeEventListener('click', handleWalletConnect);
 connectWalletButton.addEventListener('click', handleWalletConnect);
 
-// Event handler function for wallet connection
+// Main connect/disconnect wallet logic
 async function handleWalletConnect() {
-    if (isConnecting) return; // Prevent multiple concurrent connections
+    if (isConnecting) return; // Skip if already connecting
     isConnecting = true;
 
     try {
-        if (connectWalletButton.textContent === 'Connect Wallet') {
+        if (!walletConnected) {
+            // Connect wallet
             await connectWallet();
+            walletConnected = true; // Set the wallet as connected
         } else {
+            // Disconnect wallet
             await disconnectWallet();
+            walletConnected = false; // Set the wallet as disconnected
         }
     } catch (error) {
-        console.error('Error handling wallet button:', error);
-        showWalletOverlay();
+        console.error('Error handling wallet connection:', error);
+        showWalletOverlay(); // Show overlay in case of failure
     } finally {
-        isConnecting = false; // Reset the connection flag
+        isConnecting = false; // Reset the flag
     }
 }
 
