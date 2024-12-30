@@ -234,7 +234,6 @@ export async function createInstance() {
   try {
       const client = await getOrInitializeAlephClient(); // Ensure client is initialized
 
-
       console.log('Creating Instance');
 
       const sshKeys = await getSSHKeys();
