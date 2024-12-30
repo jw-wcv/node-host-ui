@@ -1,4 +1,4 @@
-import { alephClient, initializeAlephClient, account } from './client.js'; // Centralized client management
+import { alephClient, account } from './client.js'; // Centralized client management
 import { getSSHKeys, selectSSHKey } from './ssh.js'; // SSH key-related functions
 import { calculateUptime, aggregateResources, updatePowerDial, updateAvailableComputeChart, resetCharts, showPlaceholderCharts, updateCharts } from './metrics.js'; // Metrics utilities
 import { clearNodeGrid, showLoadingSpinner, nodeGrid  } from './ui.js'; // UI elements and helpers
