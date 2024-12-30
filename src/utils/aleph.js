@@ -30,10 +30,11 @@ export function renderNode(node) {
     // Determine status color class
     const statusClass = getStatusClass(node.status);
   
-    // Optionally build the IPv6 link if available
+    // We'll store the raw IP in the dataset and display the arrow separately
+    const rawIpv6 = node.ipv6 && node.ipv6.toLowerCase() !== 'unavailable' ? node.ipv6 : 'Unavailable';
     let ipv6LinkHtml = '';
-    if (node.ipv6 && node.ipv6.toLowerCase() !== 'unavailable') {
-      const ipv6Url = `http://[${node.ipv6}]:8080/`;
+    if (rawIpv6 !== 'Unavailable') {
+      const ipv6Url = `http://[${rawIpv6}]:8080/`;
       ipv6LinkHtml = `
         <a href="${ipv6Url}" target="_blank" rel="noopener" class="ipv6-link-icon">
           ↗
@@ -45,13 +46,19 @@ export function renderNode(node) {
     card.className = 'card';
     card.setAttribute('data-id', node.id);
   
+    // **Store the raw IPv6** in a data attribute instead of mixing it with the arrow
+    card.dataset.ipv6 = rawIpv6;
+  
+    // For display, we show the IPv6 text plus arrow link (if available).
+    // But we won't rely on .textContent for this anymore in pingNode/configureNode.
     card.innerHTML = `
       <div class="card-status-indicator ${statusClass}"></div>
   
       <h3 class="node-id">${node.name || node.id}</h3>
   
       <p>
-        <strong>IPv6:</strong> ${node.ipv6}
+        <strong>IPv6:</strong>
+        <span class="ipv6-display">${rawIpv6}</span>
         ${ipv6LinkHtml}
       </p>
   
@@ -68,6 +75,7 @@ export function renderNode(node) {
     nodeGrid.appendChild(card);
     console.log(`Node card appended to grid: ${node.id}`);
   }
+  
 
 export function renderNodes(nodes) {
   console.log("Rendering nodes:", nodes);

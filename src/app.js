@@ -118,7 +118,31 @@ import {
     }
   }
   
+
   // Node actions (event delegation)
+nodeGrid.addEventListener('click', async (event) => {
+    const button = event.target;
+    // Find the parent card
+    const card = button.closest('.card');
+    if (!card) return;  // If we didn't click inside a card, do nothing
+  
+    // Node ID from data-id
+    const nodeId = card.getAttribute('data-id');
+  
+    if (button.classList.contains('delete-button')) {
+      // Delete logic remains the same
+      await deleteNode(nodeId);
+    } else if (button.classList.contains('ping-button')) {
+      // Pass the button to pingNode so it can derive the IP from card.dataset.ipv6
+      await pingNode(button);
+    } else if (button.classList.contains('configure-button')) {
+      // Same approach for configureNode
+      await configureNode(button);
+    }
+  });
+  
+  // Node actions (event delegation)
+  /*
   nodeGrid.addEventListener('click', async (event) => {
     const button = event.target;
     const card = button.closest('.card');
@@ -133,4 +157,5 @@ import {
       await configureNode(ipv6, nodeId);
     }
   });
+  */
   
