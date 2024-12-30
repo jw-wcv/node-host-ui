@@ -6,96 +6,10 @@ import { calculateUptime, aggregateResources, updatePowerDial, updateAvailableCo
 import { clearNodeGrid, showLoadingSpinner, nodeGrid  } from './ui.js'; // UI elements and helpers
 import { alephChannel, alephNodeUrl, alephImage } from '../resources/constants.js';
 import { createModal, removeModal } from '../components/modal.js';
+import { getStatusClass, renderNode, renderNodes } from './ui.js';
 
 let createNodeInProgress = false; // Prevent simultaneous node creation
 let isLoadingInstances = false; // Prevent duplicate calls
-
-/**
- * Renders a node in the grid UI.
- * @param {Object} node - The node data to render.
- */
-export function renderNode(node) {
-    if (!nodeGrid) {
-      console.error("Node grid is missing in the DOM.");
-      return;
-    }
-  
-    // Check if the node card already exists
-    const existingCard = nodeGrid.querySelector(`.card[data-id="${node.id}"]`);
-    if (existingCard) {
-      console.log(`Node with ID ${node.id} already exists. Skipping duplicate rendering.`);
-      return;
-    }
-  
-    // Determine status color class
-    const statusClass = getStatusClass(node.status);
-  
-    // We'll store the raw IP in the dataset and display the arrow separately
-    const rawIpv6 = node.ipv6 && node.ipv6.toLowerCase() !== 'unavailable' ? node.ipv6 : 'Unavailable';
-    let ipv6LinkHtml = '';
-    if (rawIpv6 !== 'Unavailable') {
-      const ipv6Url = `http://[${rawIpv6}]:8080/`;
-      ipv6LinkHtml = `
-        <a href="${ipv6Url}" target="_blank" rel="noopener" class="ipv6-link-icon">
-          ↗
-        </a>
-      `;
-    }
-  
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.setAttribute('data-id', node.id);
-  
-    // **Store the raw IPv6** in a data attribute instead of mixing it with the arrow
-    card.dataset.ipv6 = rawIpv6;
-  
-    // For display, we show the IPv6 text plus arrow link (if available).
-    // But we won't rely on .textContent for this anymore in pingNode/configureNode.
-    card.innerHTML = `
-      <div class="card-status-indicator ${statusClass}"></div>
-  
-      <h3 class="node-id">${node.name || node.id}</h3>
-  
-      <p>
-        <strong>IPv6:</strong>
-        <span class="ipv6-display">${rawIpv6}</span>
-        ${ipv6LinkHtml}
-      </p>
-  
-      <p><strong>Status:</strong> ${node.status}</p>
-      <p><strong>Uptime:</strong> ${node.uptime}</p>
-      <div class="card-actions">
-        <button class="delete-button">Delete</button>
-        <button class="ping-button">Ping</button>
-        <button class="configure-button">Configure</button>
-      </div>
-      <p class="ping-result" style="display: none;"></p>
-    `;
-  
-    nodeGrid.appendChild(card);
-    console.log(`Node card appended to grid: ${node.id}`);
-  }
-  
-
-export function renderNodes(nodes) {
-  console.log("Rendering nodes:", nodes);
-  nodes.forEach((node) => renderNode(node));
-}
-
-/**
- * Returns a CSS class name for the status circle color
- * 'Running' -> green, 'Pending' -> yellow, else -> red
- */
-function getStatusClass(status) {
-    if (!status) return 'status-offline'; // default to red if unknown
-  
-    const normalized = status.toLowerCase().trim();
-    if (normalized === 'running') return 'status-running';
-    if (normalized === 'pending') return 'status-pending';
-  
-    // If not "running" or "pending", assume offline/error
-    return 'status-offline';
-  }
 
 /**
  * Filters valid Aleph instances by removing those that have a matching FORGET message.
@@ -402,5 +316,73 @@ export async function deleteNode(instanceId) {
             deleteButton.disabled = false;
             deleteButton.innerHTML = `Delete`;
         }
+    }
+}
+
+
+/**
+ * Creates a new Aleph post.
+ * @param {Object} content - The content of the post.
+ * @param {string} postType - The type of the post.
+ * @param {string} channel - The channel to post to.
+ */
+export async function createPost(content, postType = "AI-C", channel = "AI") {
+    try {
+        const client = await getOrInitializeAlephClient(); // Ensure client is initialized
+        const message = await client.createPost({
+            content,
+            postType,
+            channel,
+        });
+        console.log("Post created:", message);
+        return message;
+    } catch (error) {
+        console.error("Error creating post:", error.message);
+        throw new Error("Failed to create post.");
+    }
+}
+
+/**
+ * Updates (amends) an existing Aleph post.
+ * @param {Object} content - The updated content of the post.
+ * @param {string} refHash - The hash of the post to amend.
+ * @param {string} channel - The channel of the post.
+ */
+export async function updatePost(content, refHash, channel = "AI") {
+    try {
+        const client = await getOrInitializeAlephClient(); // Ensure client is initialized
+        const message = await client.createPost({
+            content,
+            postType: "amend",
+            ref: refHash,
+            channel,
+        });
+        console.log("Post updated:", message);
+        return message;
+    } catch (error) {
+        console.error("Error updating post:", error.message);
+        throw new Error("Failed to update post.");
+    }
+}
+
+/**
+ * Deletes a specified Aleph post.
+ * @param {string[]} hashes - Array of post hashes to delete.
+ * @param {string} reason - Reason for deleting the post.
+ * @param {string} channel - The channel of the post.
+ */
+export async function deletePost(hashes, reason = "No longer needed", channel = "AI") {
+    try {
+        const client = await getOrInitializeAlephClient(); // Ensure client is initialized
+        const message = await client.forget({
+            hashes,
+            reason,
+            channel,
+        });
+        console.log("Post deleted:", message);
+        return message;
+    } catch (error) {
+        console.error("Error deleting post:", error.message);
+        throw new Error("Failed to delete post.");
     }
 }
