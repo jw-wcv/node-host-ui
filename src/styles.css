@@ -453,15 +453,17 @@ canvas {
   
   
 
-.spinner {
-  width: 40px;
-  height: 40px;
-  margin: 0 auto;
-  position: relative;
-  animation: spin 1s linear infinite;
-  border: 6px solid rgba(255, 255, 255, 0.2);  /* Faint white border */
-  border-top-color: #ffffff;                   /* White “highlight” */
-}
+  .spinner {
+    display: inline-block;          /* So it flows with text */
+    vertical-align: middle;         /* Vertically aligns with text */
+    width: 16px;                    /* Smaller size */
+    height: 16px;
+    margin-right: 6px;             /* A little space between spinner and text */
+    border: 2px solid rgba(255, 255, 255, 0.2); 
+    border-top-color: #ffffff;      /* White highlight on top */
+    border-radius: 50%;            /* Circular shape */
+    animation: spin 0.7s linear infinite; /* Adjust speed as you like */
+  }
 
 .spinner---extra {
     display: inline-block;
