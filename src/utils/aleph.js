@@ -149,6 +149,10 @@ export async function listInstances() {
             };
           })
         );
+
+         // Log resolved nodes
+        console.log("Resolved nodes:", nodes);
+        renderNodes(nodes);
         */
 
         // Render valid instances
@@ -174,10 +178,6 @@ export async function listInstances() {
         // Clear placeholders after fetching data
         clearNodeGrid();
         resetCharts();
-  
-        // Log resolved nodes
-        console.log("Resolved nodes:", nodes);
-        renderNodes(nodes);
 
         // Update Resource Usage and Billing Information
         document.getElementById('totalCpu').textContent = `${totalCores} vCPUs`;
