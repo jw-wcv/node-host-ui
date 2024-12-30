@@ -158,8 +158,10 @@ export async function listInstances() {
         */
 
         // Clear placeholders after fetching data
+        /*
         clearNodeGrid();
         resetCharts();
+        */
 
         const placeholderCard = document.createElement('div');
         placeholderCard.className = 'card';
@@ -206,8 +208,8 @@ export async function listInstances() {
   } finally {
       // Ensure charts and spinners are cleared in case of errors
       isLoadingInstances = false;
-      resetCharts();
-      clearNodeGrid();
+     // resetCharts();
+     // clearNodeGrid();
   }
 }
 
