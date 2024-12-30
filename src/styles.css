@@ -1,13 +1,32 @@
-body {
-    font-family: 'Roboto', Arial, sans-serif;
-    background-color: #1a1a2e;
+/* main.css
+ * This file includes the primary styling for your Node Hosting Dashboard,
+ * including layout, cards, charts, and modals/spinners.
+ * If you'd rather keep modals in a separate file, you can split them out.
+ */
+
+/* ------------------------------------------------------ */
+/* 1. GLOBAL / BASE STYLES                                */
+/* ------------------------------------------------------ */
+
+html, body {
     margin: 0;
     padding: 0;
+    font-family: 'Roboto', Arial, sans-serif;
+    background-color: #1a1a2e;
     color: #eaeaea;
     display: flex;
     flex-direction: column;
-    min-height: 100vh; /* Ensure it covers the full viewport height */
+    min-height: 100vh; /* Ensure body covers full viewport height */
+    box-sizing: border-box;
 }
+
+*, *::before, *::after {
+    box-sizing: inherit;
+}
+
+/* ------------------------------------------------------ */
+/* 2. NAVBAR & HEADER                                     */
+/* ------------------------------------------------------ */
 
 .navbar {
     display: flex;
@@ -15,7 +34,7 @@ body {
     align-items: center;
     padding: 15px 5%;
     background-color: #0f3460;
-    color: white;
+    color: #fff;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     z-index: 10;
 }
@@ -34,7 +53,7 @@ body {
 
 .wallet-info button {
     background-color: #e94560;
-    color: white;
+    color: #fff;
     border: none;
     padding: 10px 16px;
     border-radius: 8px;
@@ -43,20 +62,23 @@ body {
     font-weight: 600;
     transition: background-color 0.3s ease;
 }
-
 .wallet-info button:hover {
     background-color: #ff5c7a;
 }
 
-.dashboard {
+/* ------------------------------------------------------ */
+/* 3. DASHBOARD / MAIN CONTENT                            */
+/* ------------------------------------------------------ */
+
+#dashboard.dashboard {
     width: 95%;
-    max-width: 1600px; /* Set a reasonable max width for readability */
+    max-width: 1600px;
     margin: 20px auto;
     padding: 20px;
     background-color: #16213e;
     border-radius: 10px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
-    flex-grow: 1; /* Allow it to grow and fill space */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    flex-grow: 1; /* Fills remaining space for sticky footer effect */
 }
 
 .dashboard-header {
@@ -66,19 +88,24 @@ body {
     margin-bottom: 30px;
 }
 
-.dashboard-div {
-    gap: 10px; /* Spacing between buttons */
-}
-
 .dashboard-header h1 {
     font-size: 1.8em;
     font-weight: 700;
     margin: 0;
 }
 
+.dashboard-div {
+    display: flex;
+    gap: 10px; /* Space between the create buttons */
+}
+
+/* ------------------------------------------------------ */
+/* 4. COMMON BUTTONS                                      */
+/* ------------------------------------------------------ */
+
 .action-button {
     background-color: #e94560;
-    color: white;
+    color: #fff;
     border: none;
     padding: 10px 20px;
     font-size: 0.9em;
@@ -87,110 +114,98 @@ body {
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
-
 .action-button:hover {
     background-color: #ff5c7a;
 }
 
-/* Grid Containers */
+/* ------------------------------------------------------ */
+/* 5. GRID / CARD LAYOUT                                  */
+/* ------------------------------------------------------ */
+
 .grid-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Flexible scaling */
-    gap: 20px; /* Even spacing between grid items */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
     padding-bottom: 30px;
-    justify-content: center; /* Center-align content */
-    align-items: start; /* Consistent alignment */
+    justify-content: center;
+    align-items: start;
 }
 
-
-/* Card Styles */
 .card {
     background-color: #1a1a2e;
-    padding: 15px; /* Proportional padding */
+    padding: 15px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    max-width: 100%; /* Ensure it doesn’t overflow the container */
+    max-width: 100%;
     display: flex;
-    flex-direction: column; /* Maintain vertical alignment */
-    justify-content: space-between; /* Spread content inside */
-    word-wrap: break-word; /* Prevent text from breaking layout */
-    text-align: left; /* Align text to the left */
-    box-sizing: border-box; /* Include padding in the width */
+    flex-direction: column;
+    justify-content: space-between;
+    word-wrap: break-word;
+    text-align: left;
 }
-/* Card Header */
+
+/* Card heading */
 .card h3 {
     margin: 0 0 10px;
     font-size: 1.2em;
     font-weight: 600;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap; /* Ensure headers don’t wrap */
+    white-space: nowrap;
 }
 
-/* Card Paragraphs */
+/* Card text */
 .card p {
     margin: 5px 0;
     font-size: 0.9em;
     color: #c1c1c1;
-    overflow-wrap: break-word; /* Handle long text properly */
+    overflow-wrap: break-word;
 }
 
-/* Card Buttons */
+/* Card actions (Delete/Ping/Configure, etc.) */
 .card-actions {
     margin-top: 15px;
     display: flex;
-    gap: 10px; /* Spacing between buttons */
-    justify-content: space-between; /* Evenly space buttons */
+    gap: 10px;
+    justify-content: space-between;
 }
 
 .card-actions button {
     background-color: #0f3460;
-    color: white;
+    color: #fff;
     border: none;
     padding: 8px 12px;
     border-radius: 6px;
     font-size: 0.9em;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    flex: 1; /* Ensure buttons have equal width */
-    text-align: center; /* Center-align button text */
+    flex: 1;
+    text-align: center;
 }
-
 .card-actions button:hover {
     background-color: #3282b8;
 }
 
+/* Node ID text wrapping */
 .node-id {
-    word-wrap: break-word; /* Wrap long words to the next line */
+    word-wrap: break-word;
     overflow: hidden;
-    text-overflow: ellipsis; /* Add ellipsis to truncated text */
-    white-space: nowrap;    /* Prevent wrapping to the next line */
-    max-width: 100%;        /* Ensure it stays within the container */
-    display: block;         /* Ensure block layout for consistency */
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+    display: block;
 }
 
-footer {
-    background-color: #1a1a2e;
-    text-align: center; /* Centers the text horizontally */
-    padding: 10px;
-    color: #7a7a7a;
-    font-size: 0.8em;
-    display: flex; /* Use Flexbox for better alignment */
-    justify-content: center; /* Center content horizontally */
-    align-items: center; /* Center content vertically */
-    width: 100%; /* Ensure it spans the full width */
-    margin-top: auto; /* Push the footer to the bottom of the page */
-    box-sizing: border-box; /* Ensure padding is included in width/height */
-}
+/* ------------------------------------------------------ */
+/* 6. METRICS (Charts, Resource Usage, Billing)           */
+/* ------------------------------------------------------ */
 
-.footer a {
-    color: #e94560;
-    text-decoration: none;
-    text-align: center;
-}
-
-.footer a:hover {
-    text-decoration: underline;
+.metrics-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 20px;
 }
 
 .chart-container {
@@ -198,23 +213,24 @@ footer {
     justify-content: center;
     align-items: center;
     width: 100%;
-    max-width: 600px; /* Adjust for larger screens */
+    max-width: 600px;
     height: 300px;
     margin: 20px auto;
 }
 
-.metrics-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between; /* Adjust spacing for larger screens */
-    gap: 20px;
-    padding: 20px;
+canvas {
+    max-width: 100%;
+    height: auto;
 }
+
+/* ------------------------------------------------------ */
+/* 7. PING RESULTS / TABLES                               */
+/* ------------------------------------------------------ */
 
 .ping-result {
     margin-top: 10px;
     font-size: 14px;
-    color: #fff; /* Change to white for better contrast */
+    color: #fff;
 }
 
 .ping-success {
@@ -225,128 +241,73 @@ footer {
     background-color: #1e293b;
     color: #fff;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    max-height: 200px; /* Limit the height */
-    overflow-y: auto; /* Add vertical scroll if content exceeds max-height */
+    max-height: 200px;
+    overflow-y: auto;
 }
 
 .ping-success .node-details {
     margin-bottom: 10px;
     font-weight: bold;
-    color: #93c5fd; /* Light blue for headings */
+    color: #93c5fd;
 }
 
 .workload-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 10px;
-    color: #fff; /* White text for contrast */
+    color: #fff;
 }
 
 .workload-table th,
 .workload-table td {
-    border: 1px solid #444; /* Darker border to match the theme */
+    border: 1px solid #444;
     padding: 8px;
     text-align: left;
 }
 
 .workload-table th {
-    background-color: #2563eb; /* Blue background for headers */
+    background-color: #2563eb;
     font-weight: bold;
-    color: #fff; /* White text in headers */
+    color: #fff;
 }
 
 .workload-table tr:nth-child(even) {
-    background-color: #1e293b; /* Alternate row background color */
+    background-color: #1e293b;
 }
 
 .workload-table tr:hover {
-    background-color: #3b82f6; /* Highlight row on hover */
+    background-color: #3b82f6;
 }
 
-canvas {
-    max-width: 100%;
-    height: auto;
+/* ------------------------------------------------------ */
+/* 8. FOOTER                                              */
+/* ------------------------------------------------------ */
+
+.footer {
+    background-color: #1a1a2e;
+    color: #7a7a7a;
+    text-align: center;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin-top: auto; /* Pushes footer to bottom of page */
 }
 
-/* Responsive Adjustments */
-/* Responsive Adjustments for Tablets and Mobiles */
-@media screen and (max-width: 1024px) {
-    .navbar {
-        flex-direction: column;
-        align-items: flex-start;
-        padding: 15px 5%;
-    }
-
-    .wallet-info {
-        margin-top: 10px;
-        width: 100%;
-        justify-content: space-between;
-    }
-
-    .dashboard-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 15px;
-    }
-
-    .action-button {
-        align-self: flex-start;
-        width: 100%; /* Full width on smaller screens */
-        text-align: center;
-    }
-
-    .grid-container {
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Smaller columns for tablets */
-    }
-
-    .chart-container {
-        max-width: 100%; /* Take full width */
-        height: auto; /* Allow flexible height */
-    }
+.footer a {
+    color: #e94560;
+    text-decoration: none;
+}
+.footer a:hover {
+    text-decoration: underline;
 }
 
-@media screen and (max-width: 768px) {
-    .navbar {
-        padding: 10px 4%;
-    }
+/* ------------------------------------------------------ */
+/* 9. MODALS (General + Wallet Overlay)                   */
+/* ------------------------------------------------------ */
 
-    .wallet-info {
-        flex-wrap: wrap; /* Wrap wallet info into multiple rows */
-        gap: 10px;
-    }
-
-    .grid-container {
-        grid-template-columns: 1fr; /* Single column for small screens */
-    }
-
-    .card {
-        padding: 15px; /* Reduce padding for smaller screens */
-    }
-
-    .dashboard-header {
-        align-items: stretch;
-        gap: 10px;
-    }
-
-    .action-button {
-        padding: 8px;
-        font-size: 0.85em; /* Smaller button size */
-    }
-
-    .ping-result,
-    .workload-table {
-        font-size: 12px; /* Reduce font size for better readability */
-    }
-
-    footer {
-        padding: 5px;
-        font-size: 0.75em; /* Smaller footer text */
-        text-align: center;
-        margin-bottom: 10px;
-    }
-}
-
-/* Modal Backdrop */
+/* Reusable Modal Backdrop */
 .modal-backdrop {
     position: fixed;
     top: 0;
@@ -360,10 +321,10 @@ canvas {
     z-index: 1000;
 }
 
-/* Modal Content */
+/* Reusable Modal Content */
 .modal-content {
     background-color: #16213e;
-    color: #ffffff;
+    color: #fff;
     padding: 20px;
     border-radius: 10px;
     width: 90%;
@@ -372,19 +333,18 @@ canvas {
     text-align: center;
 }
 
-/* Radio Option Styling */
+/* Radio Option for SSH Key Selection */
 .radio-option {
     margin: 10px 0;
     display: flex;
     align-items: center;
 }
-
 .radio-option label {
     margin-left: 10px;
     font-size: 14px;
 }
 
-/* Button Container */
+/* Modal Buttons */
 .button-container {
     margin-top: 20px;
     display: flex;
@@ -395,13 +355,12 @@ canvas {
 .cancel-button {
     padding: 10px 20px;
     background-color: #e94560;
-    color: #ffffff;
+    color: #fff;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     font-size: 14px;
 }
-
 .cancel-button:hover {
     background-color: #ff5c7a;
 }
@@ -410,18 +369,20 @@ canvas {
 .confirm-button {
     padding: 10px 20px;
     background-color: #4caf50;
-    color: #ffffff;
+    color: #fff;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     font-size: 14px;
 }
-
 .confirm-button:hover {
     background-color: #66bb6a;
 }
 
-/* Wallet Overlay */
+/* ------------------------------------------------------ */
+/* 10. WALLET OVERLAY                                     */
+/* ------------------------------------------------------ */
+
 .wallet-overlay {
     position: fixed;
     top: 0;
@@ -434,11 +395,9 @@ canvas {
     align-items: center;
     z-index: 1000;
 }
-
-/* Wallet Overlay Content */
 .wallet-overlay-content {
     background-color: #16213e;
-    color: #ffffff;
+    color: #fff;
     padding: 20px;
     border-radius: 10px;
     width: 90%;
@@ -446,16 +405,13 @@ canvas {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     text-align: center;
 }
-
 .wallet-overlay-content h2 {
     font-size: 1.5rem;
     margin-bottom: 20px;
-    color: #ffffff;
 }
-
 .wallet-overlay-content button {
     background-color: #1f4068;
-    color: #ffffff;
+    color: #fff;
     border: none;
     padding: 10px 20px;
     border-radius: 5px;
@@ -463,17 +419,16 @@ canvas {
     font-size: 1rem;
     transition: background-color 0.3s;
 }
-
 .wallet-overlay-content button:hover {
     background-color: #1b3b5f;
 }
-
 .wallet-overlay-content button:active {
     background-color: #142d4c;
 }
 
-  
-
+/* ------------------------------------------------------ */
+/* 11. SPINNERS & LOADING                                 */
+/* ------------------------------------------------------ */
 
 .spinner-card {
   background-color: #1e293b;
@@ -497,8 +452,8 @@ canvas {
     width: 20px;
     height: 20px;
     border: 3px solid rgba(0, 0, 0, 0.1);
-    border-radius: 50%;
     border-top-color: #3498db;
+    border-radius: 50%;
     animation: spin 1s linear infinite;
     margin-right: 5px;
 }
@@ -539,11 +494,75 @@ canvas {
     display: grid;
     visibility: visible;
     opacity: 1;
-}
-
-#nodeGrid, .card {
     position: relative;
     z-index: 1;
 }
 
+/* ------------------------------------------------------ */
+/* 12. RESPONSIVE MEDIA QUERIES                           */
+/* ------------------------------------------------------ */
 
+/* Tablets / general mid-range devices */
+@media screen and (max-width: 1024px) {
+    .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 15px 5%;
+    }
+    .wallet-info {
+        margin-top: 10px;
+        width: 100%;
+        justify-content: space-between;
+    }
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    .action-button {
+        align-self: flex-start;
+        width: 100%;
+        text-align: center;
+    }
+    .grid-container {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+    .chart-container {
+        max-width: 100%;
+        height: auto;
+    }
+}
+
+/* Phones / small devices */
+@media screen and (max-width: 768px) {
+    .navbar {
+        padding: 10px 4%;
+    }
+    .wallet-info {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .grid-container {
+        grid-template-columns: 1fr;
+    }
+    .card {
+        padding: 15px;
+    }
+    .dashboard-header {
+        align-items: stretch;
+        gap: 10px;
+    }
+    .action-button {
+        padding: 8px;
+        font-size: 0.85em;
+    }
+    .ping-result,
+    .workload-table {
+        font-size: 12px;
+    }
+    .footer {
+        padding: 5px;
+        font-size: 0.75em;
+        margin-bottom: 10px;
+    }
+}

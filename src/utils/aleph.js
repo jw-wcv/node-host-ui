@@ -5,6 +5,7 @@ import { getSSHKeys, selectSSHKey } from './ssh.js'; // SSH key-related function
 import { calculateUptime, aggregateResources, updatePowerDial, updateAvailableComputeChart, resetCharts, showPlaceholderCharts, updateCharts } from './metrics.js'; // Metrics utilities
 import { clearNodeGrid, showLoadingSpinner, nodeGrid  } from './ui.js'; // UI elements and helpers
 import { alephChannel, alephNodeUrl, alephImage } from '../resources/constants.js';
+import { createModal, removeModal } from '../components/modal.js';
 
 let createNodeInProgress = false; // Prevent simultaneous node creation
 let isLoadingInstances = false; // Prevent duplicate calls
@@ -202,8 +203,6 @@ export async function listInstances() {
 }
 
 
-
-
 /**
  * Fetches the IPv6 address for a specific Aleph instance.
  * @param {string} instanceId - The ID of the instance.
@@ -232,42 +231,72 @@ export async function createInstance() {
     }
     createNodeInProgress = true;
 
-  try {
-      const client = await getOrInitializeAlephClient(); // Ensure client is initialized
+    // 1) Show a spinner while we fetch SSH keys
+    const spinnerModal = createModal({
+        title: 'Checking SSH Keys',
+        body: '<p>Retrieving available SSH keys. Please wait...</p>',
+        showSpinner: true
+    });
 
-      console.log('Creating Instance');
+    try {
+        // Ensure client is initialized
+        const client = await getOrInitializeAlephClient();
+        console.log('Creating Instance');
 
-      const sshKeys = await getSSHKeys();
-      if (sshKeys.length === 0) {
-          alert("No SSH keys available. Please create one first.");
-          return;
-      }
+        // Fetch SSH keys
+        const sshKeys = await getSSHKeys();
+        if (sshKeys.length === 0) {
+            removeModal(spinnerModal); // Hide spinner
+            alert("No SSH keys available. Please create one first.");
+            return;
+        }
 
-      selectSSHKey(sshKeys, async (selectedKey) => {
-          const label = prompt("Enter a label for your VM:", "AlephVM").trim();
-          if (!label) {
-              alert("Label is required to create a VM.");
-              return;
-          }
+        // 2) Done fetching => remove spinner
+        removeModal(spinnerModal);
 
-          const instance = await client.createInstance({
-              authorized_keys: [selectedKey.key],
-              resources: { vcpus: 1, memory: 2048, seconds: 3600 },
-              payment: { chain: "ETH", type: "hold" },
-              channel: alephChannel,
-              metadata: { name: label },
-              image: alephImage,
-          });
+        // 3) Let the user choose which SSH key to use
+        selectSSHKey(sshKeys, async (selectedKey) => {
+            // As soon as they pick a key, show another spinner for instance creation
+            const creationModal = createModal({
+                title: 'Creating Instance',
+                body: '<p>Spinning up a new VM. This may take a few seconds...</p>',
+                showSpinner: true
+            });
 
-          alert(`Instance ${instance.item_hash} created successfully!`);
-          await listInstances();
-      });
-  } catch (error) {
-      console.error("Error creating instance:", error.message);
-      alert("Failed to create instance.");
-  } finally {
-      createNodeInProgress = false;
-  }
+            try {
+                const label = prompt("Enter a label for your VM:", "AlephVM")?.trim();
+                if (!label) {
+                    removeModal(creationModal);
+                    alert("Label is required to create a VM.");
+                    return;
+                }
+
+                const instance = await client.createInstance({
+                    authorized_keys: [selectedKey.key],
+                    resources: { vcpus: 1, memory: 2048, seconds: 3600 },
+                    payment: { chain: "ETH", type: "hold" },
+                    channel: alephChannel,
+                    metadata: { name: label },
+                    image: alephImage,
+                });
+
+                alert(`Instance ${instance.item_hash} created successfully!`);
+                await listInstances();
+            } catch (error) {
+                console.error("Error creating instance:", error.message);
+                alert("Failed to create instance.");
+            } finally {
+                removeModal(creationModal); // Hide spinner when done
+            }
+        });
+
+    } catch (error) {
+        console.error("Error creating instance:", error.message);
+        alert("Failed to create instance.");
+    } finally {
+        // In all cases, let other calls proceed eventually
+        createNodeInProgress = false;
+    }
 }
 
 
@@ -278,6 +307,7 @@ export async function createInstance() {
 export async function deleteNode(instanceId) {
     const client = await getOrInitializeAlephClient(); // Ensure client is initialized
 
+    // Optionally disable the corresponding delete button (if it exists)
     const deleteButton = document.querySelector(`#delete-button-${instanceId}`);
     if (deleteButton) {
         deleteButton.disabled = true;
@@ -285,21 +315,50 @@ export async function deleteNode(instanceId) {
     }
 
     try {
-        const confirmed = confirm(`Are you sure you want to delete instance ${instanceId}?`);
-        if (!confirmed) return;
+        // 1) Show a "Confirm Delete" modal rather than using window.confirm
+        const confirmModal = createModal({
+            title: 'Confirm Deletion',
+            body: `<p>Are you sure you want to delete instance <strong>${instanceId}</strong>?</p>`,
+            confirmText: 'Yes, Delete',
+            cancelText: 'Cancel',
+            onConfirm: async () => {
+                // 2) Once user clicks "Yes, Delete", show a spinner modal
+                const spinnerModal = createModal({
+                    title: 'Deleting Instance',
+                    body: `<p>Please wait while we delete instance <strong>${instanceId}</strong>...</p>`,
+                    showSpinner: true,
+                });
 
-        await client.forget({
-            hashes: [instanceId],
-            reason: "User requested deletion",
-            channel: alephChannel,
+                try {
+                    await client.forget({
+                        hashes: [instanceId],
+                        reason: "User requested deletion",
+                        channel: alephChannel,
+                    });
+
+                    alert(`Instance ${instanceId} deleted successfully!`);
+                    await listInstances();
+                } catch (error) {
+                    console.error("Error deleting instance:", error.message);
+                    alert("Failed to delete instance.");
+                } finally {
+                    removeModal(spinnerModal); // Hide spinner
+                }
+            },
+            onCancel: () => {
+                // If user cancels, just do nothing
+                console.log(`User canceled deletion of instance ${instanceId}`);
+            }
         });
 
-        alert(`Instance ${instanceId} deleted successfully!`);
-        await listInstances();
+        // confirmModal is returned in case you want to manipulate it,
+        // but we don't actually need to store it. The user either confirms or cancels.
+
     } catch (error) {
-        console.error("Error deleting instance:", error.message);
+        console.error("Error deleting instance (unexpected):", error.message);
         alert("Failed to delete instance.");
     } finally {
+        // Re-enable the button no matter what
         if (deleteButton) {
             deleteButton.disabled = false;
             deleteButton.innerHTML = `Delete`;

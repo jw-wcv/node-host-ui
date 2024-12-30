@@ -2,11 +2,18 @@
 
 import { alephChannel, alephNodeUrl, alephImage } from '../resources/constants.js';
 import { account, alephClient, getOrInitializeAlephClient } from './client.js';
+import { createModal, removeModal } from '../components/modal.js';
 import forge from 'node-forge';
 
 export async function createSSHKey() {
-    try {
+    // 1) Show a spinner while generating and posting keys
+    const spinnerModal = createModal({
+        title: 'Creating SSH Key',
+        body: '<p>Generating a new 4096-bit RSA key and uploading. Please wait...</p>',
+        showSpinner: true
+    });
 
+    try {
         const client = await getOrInitializeAlephClient(); // Ensure client is initialized
 
         console.log('Creating SSH Key');
@@ -17,8 +24,9 @@ export async function createSSHKey() {
         let publicKeyOpenSSH = forge.ssh.publicKeyToOpenSSH(keyPair.publicKey, "ALEPH_SERVICES");
 
         // Prompt user for a label for the key
-        const label = prompt("Enter a label for your SSH key:", "AlephHostingSSH").trim();
+        const label = prompt("Enter a label for your SSH key:", "AlephHostingSSH")?.trim();
         if (!label) {
+            removeModal(spinnerModal);
             alert("Label is required to create an SSH key.");
             return;
         }
@@ -52,17 +60,19 @@ export async function createSSHKey() {
         URL.revokeObjectURL(url);
 
         // Clear private key details from memory
-        URL.revokeObjectURL(url); // Revoke the object URL
-        blob = null; // Clear the Blob object
-        privateKeyPem = null; // Clear the private key PEM variable
-        keyPair.privateKey = null; // Explicitly nullify the private key in the keyPair object
-        keyPair.publicKey = null; // Clear the public key (optional)
-        keyPair = null; // Nullify the entire keyPair object
+        blob = null;
+        privateKeyPem = null;
+        keyPair.privateKey = null;
+        keyPair.publicKey = null;
+        keyPair = null;
 
         alert("SSH Key created, saved successfully, and securely deleted from memory!");
     } catch (error) {
         console.error("Error creating SSH Key:", error.message, error.stack);
         alert("An error occurred while creating the SSH key. Please try again.");
+    } finally {
+        // 2) Always remove the spinner modal
+        removeModal(spinnerModal);
     }
 }
 
