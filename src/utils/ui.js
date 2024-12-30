@@ -1,3 +1,5 @@
+// ui.js
+
 // Show wallet overlay
 export function showWalletOverlay() {
   const overlay = document.getElementById('walletOverlay');

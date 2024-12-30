@@ -1,3 +1,5 @@
+//aleph.js
+
 import { alephClient, account } from './client.js'; // Centralized client management
 import { getSSHKeys, selectSSHKey } from './ssh.js'; // SSH key-related functions
 import { calculateUptime, aggregateResources, updatePowerDial, updateAvailableComputeChart, resetCharts, showPlaceholderCharts, updateCharts } from './metrics.js'; // Metrics utilities
@@ -154,6 +156,12 @@ export async function listInstances() {
         console.log("Resolved nodes:", nodes);
         renderNodes(nodes);
         */
+
+        const placeholderCard = document.createElement('div');
+        placeholderCard.className = 'card';
+        placeholderCard.innerHTML = `<p>Placeholder Node</p>`;
+        nodeGrid.appendChild(placeholderCard);
+
 
         // Render valid instances
         for (const message of validInstances) {

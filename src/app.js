@@ -1,3 +1,5 @@
+// app.js
+
 // Import modules
 import { connectWallet, disconnectWallet } from './utils/wallet.js';
 import { createInstance, deleteNode, configureNode, pingNode } from './utils/aleph.js';
@@ -65,16 +67,6 @@ async function handleOverlayConnect() {
 createNodeButton.addEventListener('click', createInstance);
 createSSHButton.addEventListener('click', createSSHKey);
 
-// Check wallet connection on page load
-window.addEventListener('load', async () => {
-    try {
-        if (!walletConnected) showWalletOverlay();
-    } catch (error) {
-        console.warn('Wallet not connected on page load:', error);
-        showWalletOverlay();
-    }
-});
-
 // Node actions (event delegation for dynamically added elements)
 nodeGrid.addEventListener('click', async (event) => {
     const button = event.target;
@@ -90,3 +82,22 @@ nodeGrid.addEventListener('click', async (event) => {
         await configureNode(ipv6, nodeId);
     }
 });
+
+
+// Check wallet connection on page load
+window.addEventListener('load', async () => {
+    try {
+        if (!walletConnected) showWalletOverlay();
+    } catch (error) {
+        console.warn('Wallet not connected on page load:', error);
+        showWalletOverlay();
+    }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("DOMContentLoaded: Ensuring all DOM elements are accessible");
+    console.log("powerDial:", document.getElementById('powerDial'));
+    console.log("availableComputeChart:", document.getElementById('availableComputeChart'));
+    console.log("nodeGrid:", document.getElementById('nodeGrid'));
+});
+

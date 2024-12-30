@@ -1,3 +1,5 @@
+// wallet.js
+
 import { ethers } from 'ethers';
 import { initializeAlephClient, resetAlephClient } from './client.js';
 import { clearNodeGrid, showLoadingSpinner, hideWalletOverlay, showWalletOverlay } from './ui.js';

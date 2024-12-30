@@ -537,3 +537,9 @@ canvas {
     position: relative;
     z-index: 1;
 }
+
+
+#powerDial, #availableComputeChart, #nodeGrid {
+    border: 1px solid red;
+    background-color: rgba(255, 0, 0, 0.1);
+}

@@ -1,3 +1,5 @@
+// client.js 
+
 import { AuthenticatedAlephHttpClient } from '@aleph-sdk/client';
 import { getAccountFromProvider } from '@aleph-sdk/ethereum';
 import { nodeGrid } from './ui';

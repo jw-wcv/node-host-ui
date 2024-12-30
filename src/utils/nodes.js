@@ -1,3 +1,5 @@
+// nodes.js
+
 export async function configureNode(ipv6, nodeId) {
     try {
         const privateKey = await requestPrivateKey();
