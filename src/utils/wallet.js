@@ -60,7 +60,6 @@ export async function disconnectWallet() {
     const walletDisplay = document.getElementById('walletDisplay');
     const balanceDisplay = document.getElementById('balanceDisplay');
     const connectWalletButton = document.getElementById('connectWalletButton');
-    const walletOverlay = document.getElementById('walletOverlay');
 
     walletDisplay.textContent = 'Wallet: Not Connected';
     balanceDisplay.textContent = 'Balance: 0 ALEPH';
