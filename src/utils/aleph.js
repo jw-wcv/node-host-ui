@@ -134,12 +134,15 @@ export async function listInstances() {
         validInstances.map(async (message) => {
             const { metadata, resources, time } = message.content || {};
             const instanceId = message.item_hash;
-    
+  
+            // Log the instance ID and resources
+            console.log("Preparing node:", { instanceId, resources });
+            
             // Await the IPv6 resolution
             const ipv6 = await fetchInstanceIp(instanceId);
             const createdTime = new Date(time * 1000); // Convert UNIX time to Date
             const uptime = calculateUptime(createdTime);
-    
+  
             return {
                 id: instanceId,
                 name: metadata?.name || 'Unnamed',
@@ -147,13 +150,13 @@ export async function listInstances() {
                 status: message.confirmed ? 'Running' : 'Pending',
                 uptime,
             };
-        })
-    );
-    
-    // Log resolved nodes
-    console.log("Resolved nodes:", nodes);
-    renderNodes(nodes);
-    
+          })
+        );
+  
+        // Log resolved nodes
+        console.log("Resolved nodes:", nodes);
+        renderNodes(nodes);
+  
     
 
       // Update Resource Usage and Billing Information
