@@ -144,12 +144,33 @@ export function calculateUptime(createdTime) {
     return uptime;
 }
 
+// Calculate total VMs that can be purchased
+export function calculateAvailableCompute(balance) {
+    const availableCompute = VM_TIERS.map((tier) => ({
+        ...tier,
+        available: Math.floor(balance / tier.cost), // Calculate how many of each VM can be purchased
+    }));
+
+    return availableCompute;
+}
+
 export function updatePowerDial(balance) {
+    console.log("Updating Power Dial...");
+    console.log("Input balance:", balance);
+
     const powerPercentage = Math.min((balance / 200000) * 100, 100); // Max 100%
-    const ctx = document.getElementById('powerDial').getContext('2d');
-    
+    console.log("Calculated power percentage:", powerPercentage);
+
+    const ctx = document.getElementById('powerDial')?.getContext('2d');
+    if (!ctx) {
+        console.error("Power Dial canvas context is missing!");
+        return;
+    }
+    console.log("Power Dial canvas context is valid.");
+
     // Destroy existing chart instance if it exists
     if (powerDialChart) {
+        console.log("Destroying existing Power Dial chart instance.");
         powerDialChart.destroy();
     }
 
@@ -183,25 +204,27 @@ export function updatePowerDial(balance) {
             },
         },
     });
+
+    console.log("Power Dial chart updated successfully.");
 }
 
-// Calculate total VMs that can be purchased
-export function calculateAvailableCompute(balance) {
-    const availableCompute = VM_TIERS.map((tier) => ({
-        ...tier,
-        available: Math.floor(balance / tier.cost), // Calculate how many of each VM can be purchased
-    }));
-
-    return availableCompute;
-}
-
-// Update Available Compute Chart
 export function updateAvailableComputeChart(runningVMs, balance) {
+    console.log("Updating Available Compute Chart...");
+    console.log("Running VMs:", runningVMs, "Balance:", balance);
+
     const compute = calculateAvailableCompute(balance);
-    const ctx = document.getElementById('availableComputeChart').getContext('2d');
+    console.log("Calculated available compute data:", compute);
+
+    const ctx = document.getElementById('availableComputeChart')?.getContext('2d');
+    if (!ctx) {
+        console.error("Available Compute Chart canvas context is missing!");
+        return;
+    }
+    console.log("Available Compute Chart canvas context is valid.");
 
     // Destroy existing chart instance if it exists
     if (availableComputeChart) {
+        console.log("Destroying existing Available Compute Chart instance.");
         availableComputeChart.destroy();
     }
 
@@ -212,6 +235,9 @@ export function updateAvailableComputeChart(runningVMs, balance) {
     const availableColors = compute.map((tier) =>
         tier.available > 0 && tier.available >= runningVMs ? '#ff9800' : '#b0bec5' // Orange for valid, Grey for insufficient
     );
+
+    console.log("Running VM colors:", runningColors);
+    console.log("Available VM colors:", availableColors);
 
     availableComputeChart = new Chart(ctx, {
         type: 'bar',
@@ -283,4 +309,6 @@ export function updateAvailableComputeChart(runningVMs, balance) {
             },
         },
     });
+
+    console.log("Available Compute Chart updated successfully.");
 }
