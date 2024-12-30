@@ -526,3 +526,14 @@ canvas {
     transform: scale(1);
   }
 }
+
+#nodeGrid {
+    display: grid;
+    visibility: visible;
+    opacity: 1;
+}
+
+#nodeGrid, .card {
+    position: relative;
+    z-index: 1;
+}

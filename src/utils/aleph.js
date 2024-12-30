@@ -99,10 +99,6 @@ export async function listInstances() {
           addresses: [walletAddress],
       });
 
-      // Clear placeholders after fetching data
-      clearNodeGrid();
-      resetCharts();
-
       if (!response.messages || response.messages.length === 0) {
           clearNodeGrid();
           resetCharts();
@@ -152,24 +148,26 @@ export async function listInstances() {
             };
           })
         );
+
+        // Clear placeholders after fetching data
+        clearNodeGrid();
+        resetCharts();
   
         // Log resolved nodes
         console.log("Resolved nodes:", nodes);
         renderNodes(nodes);
-  
-    
 
-      // Update Resource Usage and Billing Information
-      document.getElementById('totalCpu').textContent = `${totalCores} vCPUs`;
-      document.getElementById('totalMemory').textContent = `${(totalMemory / 1024).toFixed(2)} GB`;
-      document.getElementById('currentMonth').textContent = `${(totalCost / 1000).toFixed(2)} K ALEPH`;
-      document.getElementById('totalUsage').textContent = `${(totalCost / 1000).toFixed(2)} K ALEPH`;
+        // Update Resource Usage and Billing Information
+        document.getElementById('totalCpu').textContent = `${totalCores} vCPUs`;
+        document.getElementById('totalMemory').textContent = `${(totalMemory / 1024).toFixed(2)} GB`;
+        document.getElementById('currentMonth').textContent = `${(totalCost / 1000).toFixed(2)} K ALEPH`;
+        document.getElementById('totalUsage').textContent = `${(totalCost / 1000).toFixed(2)} K ALEPH`;
 
-      // Update charts
-      const balanceMatch = balanceDisplay.textContent.match(/Balance:\s([\d.]+)/);
-      const balance = balanceMatch ? parseFloat(balanceMatch[1]) : 0;
-      updatePowerDial(balance);
-      updateAvailableComputeChart(totalCores, balance);
+        // Update charts
+        const balanceMatch = balanceDisplay.textContent.match(/Balance:\s([\d.]+)/);
+        const balance = balanceMatch ? parseFloat(balanceMatch[1]) : 0;
+        updatePowerDial(balance);
+        updateAvailableComputeChart(totalCores, balance);
 
   } catch (error) {
       console.error("Error fetching instances:", error.message);
