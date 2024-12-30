@@ -126,6 +126,7 @@ export async function listInstances() {
 
 
       // Prepare nodes for rendering
+      /*
       const nodes = await Promise.all(
         validInstances.map(async (message) => {
             const { metadata, resources, time } = message.content || {};
@@ -148,6 +149,27 @@ export async function listInstances() {
             };
           })
         );
+        */
+
+        // Render valid instances
+        for (const message of validInstances) {
+          const { metadata, resources, time } = message.content || {};
+          const instanceId = message.item_hash;
+          const ipv6 = await fetchInstanceIp(instanceId);
+          const createdTime = new Date(time * 1000); // Convert UNIX time to Date
+          const uptime = calculateUptime(createdTime);
+
+           // Log the instance ID and resources
+           console.log("Preparing node:", { instanceId, resources });
+
+          renderNode({
+              id: instanceId,
+              name: metadata?.name || null,
+              ipv6: ipv6 || 'Unavailable',
+              status: message.confirmed ? 'Running' : 'Pending',
+              uptime: uptime,
+          });
+      }
 
         // Clear placeholders after fetching data
         clearNodeGrid();
