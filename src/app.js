@@ -82,7 +82,8 @@ async function handleCreateInstance() {
 
 async function handleCreateSSHKey() {
     try {
-        await createSSHKey();
+       // await createSSHKey();
+        createSSHKey(); 
     } catch (error) {
         console.error('Error creating SSH key:', error);
     }

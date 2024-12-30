@@ -439,12 +439,20 @@ canvas {
   color: #94a3b8;
 }
 
+.spinner-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
 .spinner {
   width: 40px;
   height: 40px;
   margin: 0 auto;
   position: relative;
-  animation: spin 1s linear infinite;
+  animation: spin 0.8s linear infinite;
+  border: 6px solid rgba(255, 255, 255, 0.2);  /* Faint white border */
+  border-top-color: #ffffff;                   /* White “highlight” */
 }
 
 .spinner---extra {

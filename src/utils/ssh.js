@@ -5,48 +5,51 @@ import { account, alephClient, getOrInitializeAlephClient } from './client.js';
 import { createModal, removeModal } from '../components/modal.js';
 import forge from 'node-forge';
 
-export async function createSSHKey() {
-    // 1) Show a spinner while generating and posting keys
+export function createSSHKey() {
+    // 1) Show spinner immediately
     const spinnerModal = createModal({
-        title: 'Creating SSH Key',
-        body: '<p>Generating a new 4096-bit RSA key and uploading. Please wait...</p>',
-        showSpinner: true
+      title: 'Creating SSH Key',
+      body: '<p>Generating a new 4096-bit RSA key and uploading. Please wait...</p>',
+      showSpinner: true
     });
-
-    try {
-        const client = await getOrInitializeAlephClient(); // Ensure client is initialized
-
+  
+    // 2) Defer the “heavy” logic until next tick
+    setTimeout(async () => {
+      try {
         console.log('Creating SSH Key');
-
-        // Generate RSA key pair
+        const client = await getOrInitializeAlephClient(); // Ensure client is initialized
+  
+        // -- Generate RSA Key Pair (blocking) --
         let keyPair = forge.pki.rsa.generateKeyPair({ bits: 4096 });
         let privateKeyPem = forge.pki.privateKeyToPem(keyPair.privateKey);
-        let publicKeyOpenSSH = forge.ssh.publicKeyToOpenSSH(keyPair.publicKey, "ALEPH_SERVICES");
-
-        // Prompt user for a label for the key
+        let publicKeyOpenSSH = forge.ssh.publicKeyToOpenSSH(
+          keyPair.publicKey, 
+          "ALEPH_SERVICES"
+        );
+  
+        // Prompt user for a label
         const label = prompt("Enter a label for your SSH key:", "AlephHostingSSH")?.trim();
         if (!label) {
-            removeModal(spinnerModal);
-            alert("Label is required to create an SSH key.");
-            return;
+          alert("Label is required to create an SSH key.");
+          return;
         }
-
-        // Post the public key to Aleph
+  
+        // Post the public key
         const message = await client.createPost({
+          content: {
+            type: "ALEPH-SSH",
             content: {
-                type: "ALEPH-SSH",
-                content: {
-                    key: publicKeyOpenSSH,
-                    label: label,
-                },
+              key: publicKeyOpenSSH,
+              label: label,
             },
-            postType: "POST",
-            channel: alephChannel,
+          },
+          postType: "POST",
+          channel: "MY_OWN_CHANNEL", // or alephChannel
         });
-
+  
         console.log("SSH Key Posted:", message);
-
-        // Allow user to download the private key
+  
+        // Download the private key
         let blob = new Blob([privateKeyPem], { type: "text/plain" });
         let url = URL.createObjectURL(blob);
         let a = document.createElement("a");
@@ -55,26 +58,25 @@ export async function createSSHKey() {
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-
-        // Revoke the object URL to release memory
+  
+        // Clean up
         URL.revokeObjectURL(url);
-
-        // Clear private key details from memory
         blob = null;
         privateKeyPem = null;
         keyPair.privateKey = null;
         keyPair.publicKey = null;
         keyPair = null;
-
+  
         alert("SSH Key created, saved successfully, and securely deleted from memory!");
-    } catch (error) {
+      } catch (error) {
         console.error("Error creating SSH Key:", error.message, error.stack);
         alert("An error occurred while creating the SSH key. Please try again.");
-    } finally {
-        // 2) Always remove the spinner modal
+      } finally {
+        // 3) Remove the spinner no matter what
         removeModal(spinnerModal);
-    }
-}
+      }
+    }, 0);
+  }
 
 export async function getSSHKeys() {
     try {
