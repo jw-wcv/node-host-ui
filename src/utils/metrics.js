@@ -44,11 +44,6 @@ export function showPlaceholderCharts() {
     });
 }
 
-export function destroyPlaceholderCharts() {
-    if (powerDialChart) powerDialChart.destroy();
-    if (availableComputeChart) availableComputeChart.destroy();
-}
-
 /**
  * Updates the Power Dial and Available Compute charts with new data.
  * @param {number} totalCores - The total number of cores across all instances.
@@ -102,8 +97,6 @@ export function aggregateResources(instances) {
 
     return { totalCores, totalMemory, totalCost };
 }
-
-
 
 export function calculateUptime(createdTime) {
     const now = new Date();

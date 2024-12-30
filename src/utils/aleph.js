@@ -1,6 +1,6 @@
 import { alephClient, initializeAlephClient } from './client.js'; // Centralized client management
 import { getSSHKeys, selectSSHKey } from './ssh.js'; // SSH key-related functions
-import { calculateUptime, aggregateResources, updatePowerDial, updateAvailableComputeChart, destroyPlaceholderCharts, showPlaceholderCharts, updateCharts } from './metrics.js'; // Metrics utilities
+import { calculateUptime, aggregateResources, updatePowerDial, updateAvailableComputeChart, resetCharts, showPlaceholderCharts, updateCharts } from './metrics.js'; // Metrics utilities
 import { clearNodeGrid, showLoadingSpinner, nodeGrid  } from './ui.js'; // UI elements and helpers
 import { alephChannel, alephNodeUrl, alephImage } from '../resources/constants.js';
 
@@ -61,7 +61,6 @@ export function filterValidNodes(messages) {
   return instanceMessages.filter((msg) => !forgetHashes.has(msg.item_hash));
 }
 
-
 /**
  * Lists Aleph instances linked to the connected wallet.
  */
@@ -72,7 +71,7 @@ async function listInstances() {
   }
 
   try {
-      const walletAddress = alephClient.account.account?.address;
+      const walletAddress = alephClient.account?.address;
       if (!walletAddress) {
           console.warn("Wallet address is undefined.");
           return;
