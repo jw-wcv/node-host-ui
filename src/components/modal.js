@@ -104,13 +104,3 @@ export function removeModal(modalElement) {
     modalElement.parentNode.removeChild(modalElement);
   }
 }
-
-/**
- * Removes the given modal element from the DOM.
- * @param {HTMLDivElement} modalElement - The backdrop element returned by createModal()
- */
-export function removeModal(modalElement) {
-  if (modalElement && modalElement.parentNode) {
-    modalElement.parentNode.removeChild(modalElement);
-  }
-}
