@@ -15,48 +15,79 @@ let isLoadingInstances = false; // Prevent duplicate calls
  * @param {Object} node - The node data to render.
  */
 export function renderNode(node) {
-  console.log("Rendering node:", node);
-  if (!nodeGrid) {
-      console.error("Node grid is missing in the DOM.");
-      return;
+    console.log("Rendering node:", node);
+    if (!nodeGrid) {
+        console.error("Node grid is missing in the DOM.");
+        return;
+    }
+  
+    // Check if the node card already exists
+    const existingCard = nodeGrid.querySelector(`.card[data-id="${node.id}"]`);
+    if (existingCard) {
+        console.log(`Node with ID ${node.id} already exists. Skipping duplicate rendering.`);
+        return;
+    }
+  
+    // Determine status color class
+    const statusClass = getStatusClass(node.status);
+  
+    // Build the card
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.setAttribute('data-id', node.id);
+  
+    // Construct IPv6 link using bracket syntax
+    const ipv6Url = `http://[${node.ipv6}]:8080/`;
+  
+    card.innerHTML = `
+        <!-- The status indicator circle in the top-right corner -->
+        <div class="card-status-indicator ${statusClass}"></div>
+  
+        <h3 class="node-id">${node.name || node.id}</h3>
+  
+        <p>
+          <strong>IPv6:</strong>
+          ${node.ipv6}
+          <!-- "arrow link" icon that opens the IPv6 in a new tab -->
+          <a href="${ipv6Url}" target="_blank" rel="noopener" class="ipv6-link-icon">
+            ↗
+          </a>
+        </p>
+  
+        <p><strong>Status:</strong> ${node.status}</p>
+        <p><strong>Uptime:</strong> ${node.uptime}</p>
+        <div class="card-actions">
+            <button class="delete-button">Delete</button>
+            <button class="ping-button">Ping</button>
+            <button class="configure-button">Configure</button>
+        </div>
+        <p class="ping-result" style="display: none;"></p>
+    `;
+  
+    // Append to the grid
+    nodeGrid.appendChild(card);
+    console.log(`Node card appended to grid: ${node.id}`);
   }
-
-  // Check if the node card already exists
-  const existingCard = nodeGrid.querySelector(`.card[data-id="${node.id}"]`);
-  if (existingCard) {
-      console.log(`Node with ID ${node.id} already exists. Skipping duplicate rendering.`);
-      return;
-  }
-
-  // Log before creating the card
-  console.log("Creating new card for node:", node);
-
-  const card = document.createElement('div');
-  card.className = 'card';
-  card.setAttribute('data-id', node.id);
-
-  card.innerHTML = `
-      <h3 class="node-id">${node.name || node.id}</h3>
-      <p><strong>IPv6:</strong> ${node.ipv6}</p>
-      <p><strong>Status:</strong> ${node.status}</p>
-      <p><strong>Uptime:</strong> ${node.uptime}</p>
-      <div class="card-actions">
-          <button class="delete-button">Delete</button>
-          <button class="ping-button">Ping</button>
-          <button class="configure-button">Configure</button>
-      </div>
-      <p class="ping-result" style="display: none;"></p>
-  `;
-
-  // Append to the grid
-  nodeGrid.appendChild(card);
-  console.log(`Node card appended to grid: ${node.id}`);
-}
 
 export function renderNodes(nodes) {
   console.log("Rendering nodes:", nodes);
   nodes.forEach((node) => renderNode(node));
 }
+
+/**
+ * Returns a CSS class name for the status circle color
+ * 'Running' -> green, 'Pending' -> yellow, else -> red
+ */
+function getStatusClass(status) {
+    if (!status) return 'status-offline'; // default to red if unknown
+  
+    const normalized = status.toLowerCase().trim();
+    if (normalized === 'running') return 'status-running';
+    if (normalized === 'pending') return 'status-pending';
+  
+    // If not "running" or "pending", assume offline/error
+    return 'status-offline';
+  }
 
 /**
  * Filters valid Aleph instances by removing those that have a matching FORGET message.

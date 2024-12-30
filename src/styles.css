@@ -142,6 +142,7 @@ html, body {
     justify-content: space-between;
     word-wrap: break-word;
     text-align: left;
+    position: relative;
 }
 
 /* Card heading */
@@ -195,6 +196,43 @@ html, body {
     max-width: 100%;
     display: block;
 }
+
+/* The circle in the top-right corner */
+.card-status-indicator {
+    position: absolute;
+    top: 10px;       /* adjust as needed */
+    right: 10px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    box-shadow: 0 0 3px rgba(0,0,0,0.3);
+  }
+  
+  /* We define separate classes for each status color */
+  .status-running {
+    background-color: #4caf50; /* Green */
+  }
+  
+  .status-pending {
+    background-color: #ffc107; /* Yellow-ish */
+  }
+  
+  .status-offline {
+    background-color: #f44336; /* Red */
+  }
+
+  /* 3) IPv6 link icon styling */
+.ipv6-link-icon {
+    margin-left: 6px;           /* small space before icon */
+    text-decoration: none;      /* remove underline */
+    color: #ffecb3;             /* a subtle color, tweak as you like */
+    font-weight: bold;
+    font-size: 1.1em;
+    transition: color 0.3s ease;
+  }
+  .ipv6-link-icon:hover {
+    color: #ffffff;             /* turn white on hover, for example */
+  }
 
 /* ------------------------------------------------------ */
 /* 6. METRICS (Charts, Resource Usage, Billing)           */

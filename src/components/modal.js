@@ -1,4 +1,22 @@
 /**
+ * Utility to shorten a string in the middle.
+ * E.g., 'abcdef1234567890' -> 'abcdef...7890'
+ *
+ * @param {string} str - The string to shorten
+ * @param {number} maxLength - The maximum allowed length
+ * @param {number} front - How many characters to keep at the start
+ * @param {number} back - How many characters to keep at the end
+ * @returns {string}
+ */
+function shortenMid(str, maxLength = 20, front = 6, back = 6) {
+  if (typeof str !== 'string') return '';
+  if (str.length <= maxLength) return str;
+  const start = str.slice(0, front);
+  const end = str.slice(-back);
+  return `${start}...${end}`;
+}
+
+/**
  * Creates and appends a generic modal to the document body.
  *
  * @param {Object} options - Configuration for the modal
@@ -23,7 +41,7 @@ export function createModal({
 } = {}) {
   // 1) Create the backdrop
   const modalBackdrop = document.createElement('div');
-  modalBackdrop.classList.add('modal-backdrop'); 
+  modalBackdrop.classList.add('modal-backdrop');
 
   // 2) Create the modal content container
   const modalContent = document.createElement('div');
@@ -34,26 +52,31 @@ export function createModal({
     const spinnerContainer = document.createElement('div');
     spinnerContainer.classList.add('spinner-container');
     spinnerContainer.innerHTML = `
-      <img 
-        src="https://aleph.im/aleph/favicon-32x32.png" 
-        alt="Aleph Spinner" 
+      <img
+        src="https://aleph.im/aleph/favicon-32x32.png"
+        alt="Aleph Spinner"
         class="spinner-img"
       />
     `;
     modalContent.appendChild(spinnerContainer);
   }
 
-  // 4) Title (optional)
+  // 4) Title (optional) -- shorten if too long
   if (title) {
     const heading = document.createElement('h2');
-    heading.textContent = title;
+    heading.textContent = shortenMid(title, 40, 8, 8);
     modalContent.appendChild(heading);
   }
 
   // 5) Body HTML
+  // If "body" might contain HTML and you only want to shorten *text*,
+  // you might prefer to do the trimming before passing it in, or carefully parse.
   if (body) {
     const bodyDiv = document.createElement('div');
-    bodyDiv.innerHTML = body;
+    // If you want to shorten raw text only, do something like:
+    // bodyDiv.textContent = shortenMid(body, 60, 10, 10);
+    // But since you're using innerHTML, we'll do a minimal approach:
+    bodyDiv.innerHTML = shortenMid(body, 200, 50, 50);
     modalContent.appendChild(bodyDiv);
   }
 
@@ -64,7 +87,7 @@ export function createModal({
 
     if (cancelText) {
       const cancelButton = document.createElement('button');
-      cancelButton.textContent = cancelText;
+      cancelButton.textContent = shortenMid(cancelText, 16, 6, 6);
       cancelButton.classList.add('cancel-button');
       cancelButton.addEventListener('click', () => {
         if (onCancel) onCancel();
@@ -75,7 +98,7 @@ export function createModal({
 
     if (confirmText) {
       const confirmButton = document.createElement('button');
-      confirmButton.textContent = confirmText;
+      confirmButton.textContent = shortenMid(confirmText, 16, 6, 6);
       confirmButton.classList.add('confirm-button');
       confirmButton.addEventListener('click', () => {
         if (onConfirm) onConfirm();
@@ -94,7 +117,6 @@ export function createModal({
   // Return the entire backdrop so we can remove it or query it
   return modalBackdrop;
 }
-
 /**
  * Removes the given modal element from the DOM.
  * @param {HTMLDivElement} modalElement - The backdrop element returned by createModal()
