@@ -3,6 +3,7 @@ import { connectWallet, disconnectWallet } from './utils/wallet.js';
 import { createInstance, deleteNode, configureNode, pingNode } from './utils/aleph.js';
 import { createSSHKey } from './utils/ssh.js';
 import { showWalletOverlay } from './utils/ui.js';
+import { nodeGrid } from './utils/ui.js';
 import './styles.css';
 
 // UI elements
@@ -10,7 +11,6 @@ const connectWalletButton = document.getElementById('connectWalletButton');
 const overlayConnectWalletButton = document.getElementById('overlayConnectWalletButton');
 const createNodeButton = document.querySelector('.create-node-button');
 const createSSHButton = document.querySelector('.create-ssh-button');
-const nodeGrid = document.getElementById('nodeGrid');
 
 let walletConnected = false; // Track if already connected
 let isConnecting = false; // Prevent multiple clicks
