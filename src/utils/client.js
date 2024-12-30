@@ -5,7 +5,11 @@ import { getAccountFromProvider } from '@aleph-sdk/ethereum';
 import { nodeGrid } from './ui';
 
 export let alephClient = null; // Exported Aleph client
-export let account = null; // Exported account object
+// client.js
+export let account = {
+    address: null,
+    sign: null,
+  };
 let initializingClient = false;
 
 /**

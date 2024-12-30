@@ -93,8 +93,8 @@ export async function connectWallet() {
     console.log('Wallet connected explicitly:', address);
 
     // Set "account" for aleph usage
-    account.address = address;
-    account.sign = async (msg) => await signer.signMessage(msg);
+   // account.address = address;
+   // account.sign = async (msg) => await signer.signMessage(msg);
 
     // Now build the Aleph client
     await initializeAlephClient();
