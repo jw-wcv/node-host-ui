@@ -158,16 +158,8 @@ export async function listInstances() {
         */
 
         // Clear placeholders after fetching data
-        /*
         clearNodeGrid();
         resetCharts();
-        */
-
-        const placeholderCard = document.createElement('div');
-        placeholderCard.className = 'card';
-        placeholderCard.innerHTML = `<p>Placeholder Node</p>`;
-        nodeGrid.appendChild(placeholderCard);
-
 
         // Render valid instances
         for (const message of validInstances) {
