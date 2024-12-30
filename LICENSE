@@ -1,0 +1,27 @@
+MIT License with Attribution Clause
+
+Copyright (c) 2024 [Your Name or Company]
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+1. **Attribution**: The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. Users of this Software are required to provide appropriate credit, indicating if changes were made, and not in a way that suggests the licensor endorses the derivative works.
+
+2. **Inclusion of MIT-Licensed Components**: This Software may include resources originally released under the MIT License. Where applicable, such components retain their original licensing and the following MIT notice shall be included in relevant files:
+
+   ---
+   MIT Licensed Component:
+   Copyright (c) [Original MIT Author(s)]
+   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+   
+   The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+   ---
+
+3. **Liability Disclaimer**: THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+4. **Contribution Clause**: Contributions to this Software are welcome. By submitting a contribution, the contributor agrees to license their contributions under the same license as the Software.
+
+5. **Trademark Use**: This license does not grant permission to use the trade names, trademarks, service marks, or product names of the licensor, except as required for reasonable and customary use in describing the origin of the Software.
+
+---
+
+This license balances openness and protection, encouraging collaboration while ensuring proper credit and maintaining compatibility with MIT-licensed components.
