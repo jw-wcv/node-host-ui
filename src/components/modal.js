@@ -23,18 +23,22 @@ export function createModal({
 } = {}) {
   // 1) Create the backdrop
   const modalBackdrop = document.createElement('div');
-  modalBackdrop.classList.add('modal-backdrop'); // your .modal-backdrop styling in modal.css
+  modalBackdrop.classList.add('modal-backdrop'); 
 
   // 2) Create the modal content container
   const modalContent = document.createElement('div');
-  modalContent.classList.add('modal-content'); // your .modal-content styling in modal.css
+  modalContent.classList.add('modal-content');
 
-  // 3) Optional spinner
+  // 3) Optional spinner (using Aleph favicon)
   if (showSpinner) {
     const spinnerContainer = document.createElement('div');
     spinnerContainer.classList.add('spinner-container');
     spinnerContainer.innerHTML = `
-      <div class="spinner"></div>
+      <img 
+        src="https://aleph.im/aleph/favicon-32x32.png" 
+        alt="Aleph Spinner" 
+        class="spinner-img"
+      />
     `;
     modalContent.appendChild(spinnerContainer);
   }
@@ -89,6 +93,16 @@ export function createModal({
 
   // Return the entire backdrop so we can remove it or query it
   return modalBackdrop;
+}
+
+/**
+ * Removes the given modal element from the DOM.
+ * @param {HTMLDivElement} modalElement - The backdrop element returned by createModal()
+ */
+export function removeModal(modalElement) {
+  if (modalElement && modalElement.parentNode) {
+    modalElement.parentNode.removeChild(modalElement);
+  }
 }
 
 /**
