@@ -1,6 +1,6 @@
 import { alephClient, initializeAlephClient } from './client.js'; // Centralized client management
 import { getSSHKeys, selectSSHKey } from './ssh.js'; // SSH key-related functions
-import { calculateUptime, updatePowerDial, updateAvailableComputeChart, destroyPlaceholderCharts, showPlaceholderCharts, updateCharts } from './metrics.js'; // Metrics utilities
+import { calculateUptime, aggregateResources, updatePowerDial, updateAvailableComputeChart, destroyPlaceholderCharts, showPlaceholderCharts, updateCharts } from './metrics.js'; // Metrics utilities
 import { clearNodeGrid, showLoadingSpinner, nodeGrid  } from './ui.js'; // UI elements and helpers
 import { alephChannel, alephNodeUrl, alephImage } from '../resources/constants.js';
 
@@ -65,97 +65,84 @@ export function filterValidNodes(messages) {
 /**
  * Lists Aleph instances linked to the connected wallet.
  */
-export async function listInstances() {
-    if (!alephClient) {
+async function listInstances() {
+  if (!alephClient) {
       console.error("Aleph client not initialized.");
       return;
-    }
-  
-    if (!nodeGrid) {
-      console.error("Error: 'nodeGrid' element is not found in the DOM.");
-      return;
-    }
-  
-    try {
-      const walletAddress = alephClient.account?.address;
+  }
+
+  try {
+      const walletAddress = alephClient.account.account?.address;
       if (!walletAddress) {
-        console.warn("Wallet address is undefined.");
-        nodeGrid.innerHTML = '<p>Error: Wallet address is not available.</p>';
-        return;
+          console.warn("Wallet address is undefined.");
+          return;
       }
-  
-      console.log("Fetching instances for wallet:", walletAddress);
-  
-      showLoadingSpinner(3); // Show temporary loading spinners
-      showPlaceholderCharts(); // Show placeholder charts
-  
+
       // Fetch INSTANCE and FORGET messages
       const response = await alephClient.getMessages({
-        types: ['INSTANCE', 'FORGET'],
-        addresses: [walletAddress],
+          types: ['INSTANCE', 'FORGET'],
+          addresses: [walletAddress],
       });
-  
-      clearNodeGrid(); // Clear loading spinners after fetching
-      destroyPlaceholderCharts();
-  
-      console.log("Raw API response:", response.messages);
-  
+
+      nodeGrid.innerHTML = '';
+
       if (!response.messages || response.messages.length === 0) {
-        console.warn("No instances found.");
-        nodeGrid.innerHTML = '<p>No instances found for this wallet.</p>';
-        return;
+          nodeGrid.innerHTML = '<p>No instances found for this wallet.</p>';
+          return;
       }
-  
-       // Filter valid instances
-       const validInstances = filterValidNodes(response.messages);
-       console.log("Valid instances:", validInstances);
 
-       if (validInstances.length === 0) {
-           console.warn("No valid instances found.");
-           nodeGrid.innerHTML = '<p>No active instances found for this wallet.</p>';
-           return;
-       }
+      // Filter valid instances
+      const validInstances = response.messages
+          .filter((msg) => msg.type === 'INSTANCE')
+          .filter((msg) => !response.messages.some(
+              (forgetMsg) =>
+                  forgetMsg.type === 'FORGET' &&
+                  forgetMsg.content.hashes.includes(msg.item_hash)
+          ));
 
-       let totalCores = 0;
-       let totalMemory = 0;
-       let totalCost = 0;
+      if (validInstances.length === 0) {
+          nodeGrid.innerHTML = '<p>No active instances found for this wallet.</p>';
+          return;
+      }
 
-       const nodes = [];
-       for (const message of validInstances) {
-           const { metadata, resources, time } = message.content || {};
-           const instanceId = message.item_hash;
-           const ipv6 = await fetchInstanceIp(instanceId);
-           const createdTime = new Date(time * 1000);
-           const uptime = calculateUptime(createdTime);
+      // Aggregate resources and costs
+      const { totalCores, totalMemory, totalCost } = aggregateResources(
+          validInstances.map((msg) => msg.content || {})
+      );
 
-           if (resources) {
-               totalCores += resources.vcpus || 0;
-               totalMemory += resources.memory || 0;
-               totalCost += resources.vcpus * 1000; // Example cost calculation
-           }
+      // Render valid instances
+      for (const message of validInstances) {
+          const { metadata, resources, time } = message.content || {};
+          const instanceId = message.item_hash;
+          const ipv6 = await fetchInstanceIp(instanceId);
+          const createdTime = new Date(time * 1000); // Convert UNIX time to Date
+          const uptime = calculateUptime(createdTime);
 
-           nodes.push({
-               id: instanceId,
-               name: metadata?.name || null,
-               ipv6: ipv6 || 'Unavailable',
-               status: message.confirmed ? 'Running' : 'Pending',
-               uptime: uptime,
-           });
-       }
+          renderNode({
+              id: instanceId,
+              name: metadata?.name || 'Unnamed',
+              ipv6: ipv6 || 'Unavailable',
+              status: message.confirmed ? 'Running' : 'Pending',
+              uptime,
+          });
+      }
 
-       // Render all nodes
-       renderNodes(nodes);
+      // Update Resource Usage and Billing Information
+      document.getElementById('totalCpu').textContent = `${totalCores} vCPUs`;
+      document.getElementById('totalMemory').textContent = `${(totalMemory / 1024).toFixed(2)} GB`;
+      document.getElementById('currentMonth').textContent = `${(totalCost / 1000).toFixed(2)} K ALEPH`;
+      document.getElementById('totalUsage').textContent = `${(totalCost / 1000).toFixed(2)} K ALEPH`;
 
-       // Update charts and resource usage
-       const balance = parseFloat(document.getElementById('balanceDisplay').textContent.split(' ')[1]) || 0;
-       updateCharts(totalCores, totalMemory, totalCost, balance);
-    } catch (error) {
-      console.error("Error listing instances:", error.message);
-      clearNodeGrid();
-      destroyPlaceholderCharts();
+      // Update charts
+      const balanceMatch = balanceDisplay.textContent.match(/Balance:\s([\d.]+)/);
+      const balance = balanceMatch ? parseFloat(balanceMatch[1]) : 0;
+      updatePowerDial(balance);
+      updateAvailableComputeChart(totalCores, balance);
+  } catch (error) {
+      console.error("Error fetching instances:", error.message);
       nodeGrid.innerHTML = '<p>Error loading instances. Please refresh or try again later.</p>';
-   }
   }
+}
 
 
 /**

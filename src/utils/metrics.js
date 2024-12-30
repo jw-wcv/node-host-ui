@@ -70,6 +70,40 @@ export function resetCharts() {
     if (availableComputeChart) availableComputeChart.destroy();
 }
 
+/**
+ * Calculate the cost for a node based on resources.
+ * @param {Object} resources - The resources of the node (vCPUs, memory, etc.).
+ * @returns {number} - The calculated cost in ALEPH.
+ */
+export function calculateNodeCost(resources) {
+    const tier = VM_TIERS.find(
+        (t) => t.cores === resources.vcpus && t.ram === resources.memory / 1024
+    );
+    return tier ? tier.cost : 0; // Return 0 if no matching tier is found
+}
+
+/**
+ * Aggregate total cost, cores, and memory for a list of valid instances.
+ * @param {Array} instances - The list of valid instances.
+ * @returns {Object} - Aggregated totals.
+ */
+export function aggregateResources(instances) {
+    let totalCores = 0;
+    let totalMemory = 0;
+    let totalCost = 0;
+
+    instances.forEach(({ resources }) => {
+        if (resources) {
+            totalCores += resources.vcpus || 0;
+            totalMemory += resources.memory || 0;
+            totalCost += calculateNodeCost(resources);
+        }
+    });
+
+    return { totalCores, totalMemory, totalCost };
+}
+
+
 
 export function calculateUptime(createdTime) {
     const now = new Date();
