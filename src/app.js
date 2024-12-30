@@ -2,7 +2,6 @@
 
 // Import modules
 import {
-    // If you have both:
     autoConnectIfAuthorized, 
     connectWallet, 
     disconnectWallet
