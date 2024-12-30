@@ -24,7 +24,7 @@ export async function createSSHKey() {
         let publicKeyOpenSSH = forge.ssh.publicKeyToOpenSSH(keyPair.publicKey, "ALEPH_SERVICES");
 
         // Prompt user for a label for the key
-        const label = prompt("Enter a label for your SSH key:", "AlephHostingSSH");
+        const label = prompt("Enter a label for your SSH key:", "AlephHostingSSH").trim();
         if (!label) {
             alert("Label is required to create an SSH key.");
             return;

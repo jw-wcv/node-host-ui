@@ -1,11 +1,15 @@
 // Show wallet overlay
 export function showWalletOverlay() {
-  document.getElementById('walletOverlay').classList.add('visible');
+  const overlay = document.getElementById('walletOverlay');
+  overlay.classList.add('visible');
+  document.body.classList.add('overlay-active'); // Lock the UI
 }
 
 // Hide wallet overlay
 export function hideWalletOverlay() {
-  document.getElementById('walletOverlay').classList.remove('visible');
+  const overlay = document.getElementById('walletOverlay');
+  overlay.classList.remove('visible');
+  document.body.classList.remove('overlay-active');
 }
 
 // Exporting the nodeGrid constant

@@ -4,6 +4,73 @@ import { VM_TIERS } from '../resources/data';
 let powerDialChart = null; // Declare the powerDialChart variable
 let availableComputeChart = null; // Declare the availableComputeChart variable
 
+export function showPlaceholderCharts() {
+    const powerDialCtx = document.getElementById('powerDial').getContext('2d');
+    const computeChartCtx = document.getElementById('availableComputeChart').getContext('2d');
+
+    // Placeholder data
+    const placeholderData = [50, 50];
+    const labels = ['Loading...', ''];
+
+    // Power Dial Placeholder
+    powerDialChart = new Chart(powerDialCtx, {
+        type: 'doughnut',
+        data: {
+            labels,
+            datasets: [{
+                data: placeholderData,
+                backgroundColor: ['#e0e0e0', '#f5f5f5'],
+            }],
+        },
+        options: {
+            plugins: { legend: { display: false } },
+        },
+    });
+
+    // Available Compute Chart Placeholder
+    availableComputeChart = new Chart(computeChartCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Loading...'],
+            datasets: [{
+                label: 'Loading',
+                data: [0],
+                backgroundColor: '#e0e0e0',
+            }],
+        },
+        options: {
+            plugins: { legend: { display: false } },
+        },
+    });
+}
+
+export function destroyPlaceholderCharts() {
+    if (powerDialChart) powerDialChart.destroy();
+    if (availableComputeChart) availableComputeChart.destroy();
+}
+
+/**
+ * Updates the Power Dial and Available Compute charts with new data.
+ * @param {number} totalCores - The total number of cores across all instances.
+ * @param {number} totalMemory - The total memory across all instances in GB.
+ * @param {number} totalCost - The total cost of running instances in ALEPH.
+ * @param {number} balance - The wallet balance in ALEPH.
+ */
+export function updateCharts(totalCores, totalMemory, totalCost, balance) {
+    updatePowerDial(balance); // Update Power Dial Chart
+    updateAvailableComputeChart(totalCores, balance); // Update Available Compute Chart
+
+    // Update Resource Usage display
+    document.getElementById('totalCpu').textContent = `${totalCores} vCPUs`;
+    document.getElementById('totalMemory').textContent = `${(totalMemory / 1024).toFixed(2)} GB`;
+}
+
+export function resetCharts() {
+    if (powerDialChart) powerDialChart.destroy();
+    if (availableComputeChart) availableComputeChart.destroy();
+}
+
+
 export function calculateUptime(createdTime) {
     const now = new Date();
     const diffMs = now - createdTime;

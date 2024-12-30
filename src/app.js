@@ -50,10 +50,11 @@ createSSHButton.addEventListener('click', createSSHKey);
 // Check wallet connection on page load
 window.addEventListener('load', async () => {
     try {
-        if (!walletConnected) {
-            walletConnected = true; // Prevent duplicate calls
-            await connectWallet();
-        }
+        showWalletOverlay();
+        // if (!walletConnected) {
+           // walletConnected = true; // Prevent duplicate calls
+           // await connectWallet();
+       // }
     } catch (error) {
         console.warn('Wallet not connected on page load:', error);
         showWalletOverlay();

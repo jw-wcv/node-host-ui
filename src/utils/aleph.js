@@ -1,6 +1,6 @@
 import { alephClient, initializeAlephClient } from './client.js'; // Centralized client management
 import { getSSHKeys, selectSSHKey } from './ssh.js'; // SSH key-related functions
-import { calculateUptime, updatePowerDial, updateAvailableComputeChart } from './metrics.js'; // Metrics utilities
+import { calculateUptime, updatePowerDial, updateAvailableComputeChart, destroyPlaceholderCharts, showPlaceholderCharts } from './metrics.js'; // Metrics utilities
 import { clearNodeGrid, showLoadingSpinner, nodeGrid  } from './ui.js'; // UI elements and helpers
 import { alephChannel, alephNodeUrl, alephImage } from '../resources/constants.js';
 
@@ -38,6 +38,31 @@ export function renderNode(node) {
 }
 
 /**
+ * Renders a list of nodes in the UI.
+ * @param {Array} nodes - The list of node data to render.
+ */
+export function renderNodes(nodes) {
+  nodes.forEach((node) => renderNode(node));
+}
+
+/**
+ * Filters valid Aleph instances by removing those that have a matching FORGET message.
+ * @param {Array} messages - The raw messages from Aleph.
+ * @returns {Array} - A list of valid instance messages.
+ */
+export function filterValidNodes(messages) {
+  const instanceMessages = messages.filter((msg) => msg.type === 'INSTANCE');
+  const forgetHashes = new Set(
+      messages
+          .filter((msg) => msg.type === 'FORGET')
+          .flatMap((msg) => msg.content.hashes || [])
+  );
+
+  return instanceMessages.filter((msg) => !forgetHashes.has(msg.item_hash));
+}
+
+
+/**
  * Lists Aleph instances linked to the connected wallet.
  */
 export async function listInstances() {
@@ -62,6 +87,7 @@ export async function listInstances() {
       console.log("Fetching instances for wallet:", walletAddress);
   
       showLoadingSpinner(3); // Show temporary loading spinners
+      showPlaceholderCharts(); // Show placeholder charts
   
       // Fetch INSTANCE and FORGET messages
       const response = await alephClient.getMessages({
@@ -70,6 +96,7 @@ export async function listInstances() {
       });
   
       clearNodeGrid(); // Clear loading spinners after fetching
+      destroyPlaceholderCharts();
   
       console.log("Raw API response:", response.messages);
   
@@ -79,62 +106,55 @@ export async function listInstances() {
         return;
       }
   
-      const instanceMessages = response.messages.filter((msg) => msg.type === 'INSTANCE');
-      const forgetHashes = new Set(
-        response.messages
-          .filter((msg) => msg.type === 'FORGET')
-          .flatMap((msg) => msg.content.hashes || [])
-      );
-  
-      const validInstances = instanceMessages.filter((msg) => !forgetHashes.has(msg.item_hash));
-  
-      console.log("Valid instances:", validInstances);
-  
-      if (validInstances.length === 0) {
-        console.warn("No valid instances found.");
-        nodeGrid.innerHTML = '<p>No active instances found for this wallet.</p>';
-        return;
-      }
-  
-      let totalCores = 0;
-      let totalMemory = 0;
-      let totalCost = 0;
-  
-      for (const message of validInstances) {
-        const { metadata, resources, time } = message.content || {};
-        const instanceId = message.item_hash;
-        const ipv6 = await fetchInstanceIp(instanceId);
-        const createdTime = new Date(time * 1000);
-        const uptime = calculateUptime(createdTime);
-  
-        console.log("Rendering node:", { instanceId, metadata, resources, ipv6 });
-  
-        if (resources) {
-          totalCores += resources.vcpus || 0;
-          totalMemory += resources.memory || 0;
-          totalCost += resources.vcpus * 1000; // Example cost calculation
-        }
-  
-        renderNode({
-          id: instanceId,
-          name: metadata?.name || null,
-          ipv6: ipv6 || 'Unavailable',
-          status: message.confirmed ? 'Running' : 'Pending',
-          uptime: uptime,
-        });
-      }
-  
-      document.getElementById('totalCpu').textContent = `${totalCores} vCPUs`;
-      document.getElementById('totalMemory').textContent = `${(totalMemory / 1024).toFixed(2)} GB`;
-  
-      // Update metrics and charts
-      updatePowerDial(totalCost);
-      updateAvailableComputeChart(totalCores, totalCost);
+       // Filter valid instances
+       const validInstances = filterValidNodes(response.messages);
+       console.log("Valid instances:", validInstances);
+
+       if (validInstances.length === 0) {
+           console.warn("No valid instances found.");
+           nodeGrid.innerHTML = '<p>No active instances found for this wallet.</p>';
+           return;
+       }
+
+       let totalCores = 0;
+       let totalMemory = 0;
+       let totalCost = 0;
+
+       const nodes = [];
+       for (const message of validInstances) {
+           const { metadata, resources, time } = message.content || {};
+           const instanceId = message.item_hash;
+           const ipv6 = await fetchInstanceIp(instanceId);
+           const createdTime = new Date(time * 1000);
+           const uptime = calculateUptime(createdTime);
+
+           if (resources) {
+               totalCores += resources.vcpus || 0;
+               totalMemory += resources.memory || 0;
+               totalCost += resources.vcpus * 1000; // Example cost calculation
+           }
+
+           nodes.push({
+               id: instanceId,
+               name: metadata?.name || null,
+               ipv6: ipv6 || 'Unavailable',
+               status: message.confirmed ? 'Running' : 'Pending',
+               uptime: uptime,
+           });
+       }
+
+       // Render all nodes
+       renderNodes(nodes);
+
+       // Update charts and resource usage
+       const balance = parseFloat(document.getElementById('balanceDisplay').textContent.split(' ')[1]) || 0;
+       updateCharts(totalCores, totalMemory, totalCost, balance);
     } catch (error) {
       console.error("Error listing instances:", error.message);
       clearNodeGrid();
+      destroyPlaceholderCharts();
       nodeGrid.innerHTML = '<p>Error loading instances. Please refresh or try again later.</p>';
-    }
+   }
   }
 
 
@@ -170,7 +190,7 @@ export async function createInstance() {
         }
 
         selectSSHKey(sshKeys, async (selectedKey) => {
-            const label = prompt("Enter a label for your VM:", "AlephVM");
+            const label = prompt("Enter a label for your VM:", "AlephVM").trim();
             if (!label) {
                 alert("Label is required to create a VM.");
                 return;

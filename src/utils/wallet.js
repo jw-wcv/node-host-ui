@@ -1,6 +1,7 @@
 import { ethers } from 'ethers';
 import { initializeAlephClient, resetAlephClient } from './client.js';
-import { showWalletOverlay, hideWalletOverlay } from './ui.js';
+import { clearNodeGrid, showLoadingSpinner, hideWalletOverlay, showWalletOverlay } from './ui.js';
+import { resetCharts } from './metrics.js';
 import { listInstances } from './aleph.js';
 
 // Connect wallet
@@ -11,6 +12,9 @@ export async function connectWallet() {
     }
 
     try {
+        // Display loading spinner during connection
+        showWalletOverlay();
+
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         await provider.send('eth_requestAccounts', []);
         const signer = provider.getSigner();
@@ -24,19 +28,22 @@ export async function connectWallet() {
             sign: async (msg) => await signer.signMessage(msg),
         });
 
-        // Update wallet UI
+        // Update UI with wallet details
         const walletDisplay = document.getElementById('walletDisplay');
         const balanceDisplay = document.getElementById('balanceDisplay');
-        const connectWalletButton = document.getElementById('connectWalletButton');
-
         walletDisplay.textContent = `Wallet: ${address.slice(0, 6)}...${address.slice(-4)}`;
+        balanceDisplay.textContent = `Balance: Fetching...`;
+
+        // Fetch and display balance
         const balance = await fetchTokenBalance(provider, address);
         balanceDisplay.textContent = `Balance: ${balance} ALEPH`;
 
-        // Update button to "Disconnect"
-        connectWalletButton.textContent = 'Disconnect';
+        // Change button to "Disconnect Wallet"
+        const connectWalletButton = document.getElementById('connectWalletButton');
+        connectWalletButton.textContent = 'Disconnect Wallet';
         connectWalletButton.onclick = disconnectWallet;
 
+        // Fetch instances and load charts
         await listInstances();
         hideWalletOverlay();
     } catch (error) {
@@ -44,6 +51,7 @@ export async function connectWallet() {
         showWalletOverlay();
     }
 }
+
 
 // Disconnect wallet
 export async function disconnectWallet() {
@@ -61,7 +69,10 @@ export async function disconnectWallet() {
     // Reset Aleph client and node grid
     resetAlephClient();
 
-    walletOverlay.classList.add('visible');
+    // Clear UI
+    clearNodeGrid();
+    resetCharts();
+    showWalletOverlay();
 
     try {
         await disconnectWeb3Wallets();
