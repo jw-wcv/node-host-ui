@@ -2,6 +2,7 @@
 
 import { alephClient } from './client.js';
 import { alephChannel, alephNodeUrl, alephImage } from '../resources/constants.js';
+import { account, alephClient } from './client.js';
 import forge from 'node-forge';
 
 export async function createSSHKey() {
@@ -9,16 +10,6 @@ export async function createSSHKey() {
         if (!window.ethereum) {
             throw new Error("MetaMask not found. Please install it.");
         }
-
-        // Request wallet connection and retrieve account
-        await window.ethereum.request({ method: 'eth_requestAccounts' });
-        const account = await getAccountFromProvider(window.ethereum);
-
-        const connectedAccount = await getAccountFromProvider(window.ethereum);
-        console.log("Connected Account:", connectedAccount);
-
-        // Initialize Aleph client
-        const alephClient = new AuthenticatedAlephHttpClient(connectedAccount);
 
         // Generate RSA key pair
         let keyPair = forge.pki.rsa.generateKeyPair({ bits: 4096 });
@@ -80,13 +71,6 @@ export async function getSSHKeys() {
         if (!window.ethereum) {
             throw new Error("MetaMask not found. Please install it.");
         }
-
-        // Request wallet connection and retrieve account
-        await window.ethereum.request({ method: 'eth_requestAccounts' });
-        const account = await getAccountFromProvider(window.ethereum);
-
-        // Initialize Aleph client
-        alephClient = new AuthenticatedAlephHttpClient(account);
 
         // Fetch POST messages of type ALEPH-SSH
         const response = await alephClient.getMessages({
