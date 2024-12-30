@@ -1,6 +1,6 @@
 //aleph.js
 
-import { alephClient, account, ensureAlephClient } from './client.js'; // Centralized client management
+import { alephClient, account, getOrInitializeAlephClient } from './client.js'; // Centralized client management
 import { getSSHKeys, selectSSHKey } from './ssh.js'; // SSH key-related functions
 import { calculateUptime, aggregateResources, updatePowerDial, updateAvailableComputeChart, resetCharts, showPlaceholderCharts, updateCharts } from './metrics.js'; // Metrics utilities
 import { clearNodeGrid, showLoadingSpinner, nodeGrid  } from './ui.js'; // UI elements and helpers
@@ -232,7 +232,8 @@ export async function createInstance() {
   createNodeInProgress = true;
 
   try {
-    await ensureAlephClient(); // Ensure alephClient is ready
+    const client = await getOrInitializeAlephClient(); // Ensure client is initialized
+    
       if (!alephClient) {
           throw new Error("Aleph client is not initialized. Please connect your wallet first.");
       }

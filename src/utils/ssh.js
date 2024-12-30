@@ -1,14 +1,13 @@
 // ssh.js
 
 import { alephChannel, alephNodeUrl, alephImage } from '../resources/constants.js';
-import { account, alephClient } from './client.js';
+import { account, alephClient, getOrInitializeAlephClient } from './client.js';
 import forge from 'node-forge';
 
 export async function createSSHKey() {
     try {
-        if (!window.ethereum) {
-            throw new Error("MetaMask not found. Please install it.");
-        }
+
+        const client = await getOrInitializeAlephClient(); // Ensure client is initialized
 
         console.log('Creating SSH Key');
 
@@ -69,9 +68,7 @@ export async function createSSHKey() {
 
 export async function getSSHKeys() {
     try {
-        if (!window.ethereum) {
-            throw new Error("MetaMask not found. Please install it.");
-        }
+        const client = await getOrInitializeAlephClient(); // Ensure client is initialized
 
         if (!alephClient) {
             throw new Error("Aleph client is not initialized.");
