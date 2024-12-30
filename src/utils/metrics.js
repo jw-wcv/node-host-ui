@@ -3,23 +3,36 @@
 import Chart from 'chart.js/auto';
 import { VM_TIERS } from '../resources/data';
 
-let powerDialChart = null; // Declare the powerDialChart variable
-let availableComputeChart = null; // Declare the availableComputeChart variable
+// Keep references to our chart instances
+let powerDialChart = null; 
+let availableComputeChart = null; 
 
+// SHOW PLACEHOLDER CHARTS
+// =======================
 export function showPlaceholderCharts() {
-    const powerDialCtx = document.getElementById('powerDial').getContext('2d');
-    const computeChartCtx = document.getElementById('availableComputeChart').getContext('2d');
+    const powerDialCtx = document.getElementById('powerDial')?.getContext('2d');
+    const computeChartCtx = document.getElementById('availableComputeChart')?.getContext('2d');
 
     if (!powerDialCtx || !computeChartCtx) {
         console.error("Chart elements not found in the DOM.");
         return;
     }
 
-    // Placeholder data
+    // 1) Destroy old charts if they exist
+    if (powerDialChart) {
+        powerDialChart.destroy();
+        powerDialChart = null;
+    }
+    if (availableComputeChart) {
+        availableComputeChart.destroy();
+        availableComputeChart = null;
+    }
+
+    // 2) Build placeholder data
     const placeholderData = [50, 50];
     const labels = ['Loading...', ''];
 
-    // Power Dial Placeholder
+    // 3) Create the Power Dial placeholder
     powerDialChart = new Chart(powerDialCtx, {
         type: 'doughnut',
         data: {
@@ -34,7 +47,7 @@ export function showPlaceholderCharts() {
         },
     });
 
-    // Available Compute Chart Placeholder
+    // 4) Create the Available Compute placeholder
     availableComputeChart = new Chart(computeChartCtx, {
         type: 'bar',
         data: {
@@ -51,36 +64,9 @@ export function showPlaceholderCharts() {
     });
 }
 
-/**
- * Updates the Power Dial and Available Compute charts with new data.
- * @param {number} totalCores - The total number of cores across all instances.
- * @param {number} totalMemory - The total memory across all instances in GB.
- * @param {number} totalCost - The total cost of running instances in ALEPH.
- * @param {number} balance - The wallet balance in ALEPH.
- */
-export function updateCharts(totalCores, totalMemory, totalCost, balance) {
-    console.log("Updating charts with:", { totalCores, totalMemory, totalCost, balance });
-
-    // Ensure the chart contexts exist
-    const powerDialCtx = document.getElementById('powerDial')?.getContext('2d');
-    const computeChartCtx = document.getElementById('availableComputeChart')?.getContext('2d');
-
-    if (!powerDialCtx || !computeChartCtx) {
-        console.error("Chart elements are missing in the DOM.");
-        return;
-    }
-
-    // Update Power Dial Chart
-    updatePowerDial(balance);
-
-    // Update Available Compute Chart
-    updateAvailableComputeChart(totalCores, balance);
-
-    // Update Resource Usage display
-    document.getElementById('totalCpu').textContent = `${totalCores} vCPUs`;
-    document.getElementById('totalMemory').textContent = `${(totalMemory / 1024).toFixed(2)} GB`;
-}
-
+// RESET CHARTS
+// ============
+// Safely destroy both chart instances.
 export function resetCharts() {
     if (powerDialChart) {
         powerDialChart.destroy();
@@ -92,75 +78,44 @@ export function resetCharts() {
     }
 }
 
+// UPDATE CHARTS
+// =============
 /**
- * Calculate the cost for a node based on resources.
- * @param {Object} resources - The resources of the node (vCPUs, memory, etc.).
- * @returns {number} - The calculated cost in ALEPH.
+ * Updates both the Power Dial and Available Compute charts with new data.
+ * @param {number} totalCores - The total number of cores across all instances.
+ * @param {number} totalMemory - The total memory across all instances in GB.
+ * @param {number} totalCost - The total cost of running instances in ALEPH.
+ * @param {number} balance - The wallet balance in ALEPH.
  */
-export function calculateNodeCost(resources) {
-    const tier = VM_TIERS.find(
-        (t) => t.cores === resources.vcpus && t.ram === resources.memory / 1024
-    );
-    return tier ? tier.cost : 0; // Return 0 if no matching tier is found
+export function updateCharts(totalCores, totalMemory, totalCost, balance) {
+    console.log("Updating charts with:", { totalCores, totalMemory, totalCost, balance });
+
+    const powerDialCtx = document.getElementById('powerDial')?.getContext('2d');
+    const computeChartCtx = document.getElementById('availableComputeChart')?.getContext('2d');
+
+    if (!powerDialCtx || !computeChartCtx) {
+        console.error("Chart elements are missing in the DOM.");
+        return;
+    }
+
+    // Update (or recreate) the Power Dial
+    updatePowerDial(balance);
+
+    // Update (or recreate) the Available Compute
+    updateAvailableComputeChart(totalCores, balance);
+
+    // Update the resource usage display in the DOM
+    document.getElementById('totalCpu').textContent = `${totalCores} vCPUs`;
+    document.getElementById('totalMemory').textContent = `${(totalMemory / 1024).toFixed(2)} GB`;
 }
 
-/**
- * Aggregate total cost, cores, and memory for a list of valid instances.
- * @param {Array} instances - The list of valid instances.
- * @returns {Object} - Aggregated totals.
- */
-export function aggregateResources(instances) {
-    let totalCores = 0;
-    let totalMemory = 0;
-    let totalCost = 0;
-
-    instances.forEach(({ resources }) => {
-        if (resources && typeof resources.vcpus !== 'undefined' && typeof resources.memory !== 'undefined') {
-            totalCores += resources.vcpus || 0;
-            totalMemory += resources.memory || 0;
-            totalCost += calculateNodeCost(resources);
-        } else {
-            console.warn("Invalid instance resources:", resources);
-        }
-    });
-
-    return { totalCores, totalMemory, totalCost };
-}
-
-
-export function calculateUptime(createdTime) {
-    const now = new Date();
-    const diffMs = now - createdTime;
-
-    const seconds = Math.floor((diffMs / 1000) % 60);
-    const minutes = Math.floor((diffMs / 1000 / 60) % 60);
-    const hours = Math.floor((diffMs / 1000 / 60 / 60) % 24);
-    const days = Math.floor(diffMs / 1000 / 60 / 60 / 24);
-
-    let uptime = '';
-    if (days > 0) uptime += `${days}d `;
-    if (hours > 0 || days > 0) uptime += `${hours}h `;
-    if (minutes > 0 || hours > 0 || days > 0) uptime += `${minutes}m `;
-    uptime += `${seconds}s`;
-
-    return uptime;
-}
-
-// Calculate total VMs that can be purchased
-export function calculateAvailableCompute(balance) {
-    const availableCompute = VM_TIERS.map((tier) => ({
-        ...tier,
-        available: Math.floor(balance / tier.cost), // Calculate how many of each VM can be purchased
-    }));
-
-    return availableCompute;
-}
-
+// POWER DIAL
+// ==========
 export function updatePowerDial(balance) {
     console.log("Updating Power Dial...");
     console.log("Input balance:", balance);
 
-    const powerPercentage = Math.min((balance / 200000) * 100, 100); // Max 100%
+    const powerPercentage = Math.min((balance / 200000) * 100, 100); // Cap at 100%
     console.log("Calculated power percentage:", powerPercentage);
 
     const ctx = document.getElementById('powerDial')?.getContext('2d');
@@ -168,14 +123,14 @@ export function updatePowerDial(balance) {
         console.error("Power Dial canvas context is missing!");
         return;
     }
-    console.log("Power Dial canvas context is valid.");
 
-    // Destroy existing chart instance if it exists
+    // Destroy existing chart if it exists
     if (powerDialChart) {
         console.log("Destroying existing Power Dial chart instance.");
         powerDialChart.destroy();
     }
 
+    // Recreate the Power Dial chart
     powerDialChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
@@ -192,7 +147,7 @@ export function updatePowerDial(balance) {
             responsive: true,
             maintainAspectRatio: true,
             layout: {
-                padding: 10, // Adds spacing around the chart
+                padding: 10, 
             },
             plugins: {
                 legend: {
@@ -210,6 +165,8 @@ export function updatePowerDial(balance) {
     console.log("Power Dial chart updated successfully.");
 }
 
+// AVAILABLE COMPUTE CHART
+// =======================
 export function updateAvailableComputeChart(runningVMs, balance) {
     console.log("Updating Available Compute Chart...");
     console.log("Running VMs:", runningVMs, "Balance:", balance);
@@ -222,20 +179,19 @@ export function updateAvailableComputeChart(runningVMs, balance) {
         console.error("Available Compute Chart canvas context is missing!");
         return;
     }
-    console.log("Available Compute Chart canvas context is valid.");
 
-    // Destroy existing chart instance if it exists
+    // Destroy existing chart if it exists
     if (availableComputeChart) {
         console.log("Destroying existing Available Compute Chart instance.");
         availableComputeChart.destroy();
     }
 
-    // Define bar colors dynamically
+    // Dynamically define bar colors based on the user’s balance and running VMs
     const runningColors = compute.map((tier) =>
-        tier.cores <= runningVMs ? '#2196f3' : '#b0bec5' // Blue for valid, Grey for invalid
+        tier.cores <= runningVMs ? '#2196f3' : '#b0bec5' // Blue if the tier can run, otherwise grey
     );
     const availableColors = compute.map((tier) =>
-        tier.available > 0 && tier.available >= runningVMs ? '#ff9800' : '#b0bec5' // Orange for valid, Grey for insufficient
+        tier.available > 0 && tier.available >= runningVMs ? '#ff9800' : '#b0bec5'
     );
 
     console.log("Running VM colors:", runningColors);
@@ -248,7 +204,7 @@ export function updateAvailableComputeChart(runningVMs, balance) {
             datasets: [
                 {
                     label: 'Running VMs',
-                    data: compute.map((tier) => runningVMs),
+                    data: compute.map(() => runningVMs),
                     backgroundColor: runningColors,
                     borderRadius: 4,
                 },
@@ -264,7 +220,7 @@ export function updateAvailableComputeChart(runningVMs, balance) {
             responsive: true,
             maintainAspectRatio: true,
             layout: {
-                padding: 10, // Adds spacing around the chart
+                padding: 10,
             },
             plugins: {
                 legend: {
@@ -302,7 +258,7 @@ export function updateAvailableComputeChart(runningVMs, balance) {
                     },
                     beginAtZero: true,
                     ticks: {
-                        stepSize: 1, // Ensures the y-axis shows integers
+                        stepSize: 1, 
                         font: {
                             size: 12,
                         },
@@ -313,4 +269,57 @@ export function updateAvailableComputeChart(runningVMs, balance) {
     });
 
     console.log("Available Compute Chart updated successfully.");
+}
+
+// UTILITY FUNCTIONS
+// =================
+export function calculateAvailableCompute(balance) {
+    return VM_TIERS.map((tier) => ({
+        ...tier,
+        // how many of this tier could the user theoretically afford?
+        available: Math.floor(balance / tier.cost), 
+    }));
+}
+
+export function calculateNodeCost(resources) {
+    const tier = VM_TIERS.find(
+        (t) => t.cores === resources.vcpus && t.ram === resources.memory / 1024
+    );
+    return tier ? tier.cost : 0;
+}
+
+export function aggregateResources(instances) {
+    let totalCores = 0;
+    let totalMemory = 0;
+    let totalCost = 0;
+
+    instances.forEach(({ resources }) => {
+        if (resources && resources.vcpus !== undefined && resources.memory !== undefined) {
+            totalCores += resources.vcpus || 0;
+            totalMemory += resources.memory || 0;
+            totalCost += calculateNodeCost(resources);
+        } else {
+            console.warn("Invalid instance resources:", resources);
+        }
+    });
+
+    return { totalCores, totalMemory, totalCost };
+}
+
+export function calculateUptime(createdTime) {
+    const now = new Date();
+    const diffMs = now - createdTime;
+
+    const seconds = Math.floor((diffMs / 1000) % 60);
+    const minutes = Math.floor((diffMs / 1000 / 60) % 60);
+    const hours = Math.floor((diffMs / 1000 / 60 / 60) % 24);
+    const days = Math.floor(diffMs / 1000 / 60 / 60 / 24);
+
+    let uptime = '';
+    if (days > 0) uptime += `${days}d `;
+    if (hours > 0 || days > 0) uptime += `${hours}h `;
+    if (minutes > 0 || hours > 0 || days > 0) uptime += `${minutes}m `;
+    uptime += `${seconds}s`;
+
+    return uptime;
 }
