@@ -24,7 +24,7 @@ export async function createSSHKey() {
         }
 
         // Post the public key to Aleph
-        const message = await alephClient.createPost({
+        const message = await client.createPost({
             content: {
                 type: "ALEPH-SSH",
                 content: {
@@ -69,10 +69,6 @@ export async function createSSHKey() {
 export async function getSSHKeys() {
     try {
         const client = await getOrInitializeAlephClient(); // Ensure client is initialized
-
-        if (!alephClient) {
-            throw new Error("Aleph client is not initialized.");
-        }
         if (!account) {
             throw new Error("Account is not set. Please connect your wallet.");
         }
@@ -80,7 +76,7 @@ export async function getSSHKeys() {
         console.log("Fetching SSH keys with account:", account.address);
 
         // Fetch POST messages of type ALEPH-SSH
-        const response = await alephClient.getMessages({
+        const response = await client.getMessages({
             types: ["POST"],
             addresses: [account.address],
         });

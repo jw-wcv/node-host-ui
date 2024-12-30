@@ -10,6 +10,7 @@ let initializingClient = false;
 
 export async function initializeAlephClient() {
     if (alephClient) return alephClient; // Return if already initialized
+
     if (initializingClient) {
         console.log("Aleph client is already being initialized.");
         while (!alephClient) {
@@ -25,15 +26,23 @@ export async function initializeAlephClient() {
             throw new Error("MetaMask not found. Please install it.");
         }
 
+        // Request accounts from MetaMask
         await window.ethereum.request({ method: "eth_requestAccounts" });
+
+        // Get account from MetaMask
         account = await getAccountFromProvider(window.ethereum);
 
+        // Initialize Aleph client
         alephClient = new AuthenticatedAlephHttpClient(account);
         console.log("Aleph client initialized with account:", account.address);
 
         return alephClient;
+    } catch (error) {
+        console.error("Error initializing Aleph client:", error.message, error.stack);
+        alert("Failed to initialize Aleph client. Please ensure your wallet is connected and try again.");
+        throw new Error("Aleph client initialization failed."); // Re-throw the error for higher-level handling
     } finally {
-        initializingClient = false;
+        initializingClient = false; // Ensure the flag is reset
     }
 }
 

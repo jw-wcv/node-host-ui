@@ -76,10 +76,7 @@ export function filterValidNodes(messages) {
  * Lists Aleph instances linked to the connected wallet.
  */
 export async function listInstances() {
-  if (!alephClient) {
-      console.error("Aleph client not initialized.");
-      return;
-  }
+  const client = await getOrInitializeAlephClient(); // Ensure client is initialized  
 
   if (isLoadingInstances) return;
     isLoadingInstances = true;
@@ -96,7 +93,7 @@ export async function listInstances() {
       showPlaceholderCharts(); // Show placeholder charts
 
       // Fetch INSTANCE and FORGET messages
-      const response = await alephClient.getMessages({
+      const response = await client.getMessages({
           types: ['INSTANCE', 'FORGET'],
           addresses: [walletAddress],
       });
@@ -232,11 +229,8 @@ export async function createInstance() {
   createNodeInProgress = true;
 
   try {
-    const client = await getOrInitializeAlephClient(); // Ensure client is initialized
-    
-      if (!alephClient) {
-          throw new Error("Aleph client is not initialized. Please connect your wallet first.");
-      }
+      const client = await getOrInitializeAlephClient(); // Ensure client is initialized
+
 
       console.log('Creating Instance');
 
@@ -253,7 +247,7 @@ export async function createInstance() {
               return;
           }
 
-          const instance = await alephClient.createInstance({
+          const instance = await client.createInstance({
               authorized_keys: [selectedKey.key],
               resources: { vcpus: 1, memory: 2048, seconds: 3600 },
               payment: { chain: "ETH", type: "hold" },
@@ -279,10 +273,7 @@ export async function createInstance() {
  * @param {string} instanceId - The ID of the instance to delete.
  */
 export async function deleteNode(instanceId) {
-    if (!alephClient) {
-        console.error("Aleph client not initialized.");
-        return;
-    }
+    const client = await getOrInitializeAlephClient(); // Ensure client is initialized
 
     const deleteButton = document.querySelector(`#delete-button-${instanceId}`);
     if (deleteButton) {
@@ -294,7 +285,7 @@ export async function deleteNode(instanceId) {
         const confirmed = confirm(`Are you sure you want to delete instance ${instanceId}?`);
         if (!confirmed) return;
 
-        await alephClient.forget({
+        await client.forget({
             hashes: [instanceId],
             reason: "User requested deletion",
             channel: alephChannel,
