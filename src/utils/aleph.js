@@ -166,7 +166,6 @@ export async function listInstances() {
 
 
       // Prepare nodes for rendering
-      /*
       const nodes = await Promise.all(
         validInstances.map(async (message) => {
             const { metadata, resources, time } = message.content || {};
@@ -190,16 +189,16 @@ export async function listInstances() {
           })
         );
 
-         // Log resolved nodes
-        console.log("Resolved nodes:", nodes);
-        renderNodes(nodes);
-        */
-
         // Clear placeholders after fetching data
         clearNodeGrid();
         resetCharts();
 
+         // Log resolved nodes
+        console.log("Resolved nodes:", nodes);
+        renderNodes(nodes);
+
         // Render valid instances
+        /*
         for (const message of validInstances) {
           const { metadata, resources, time } = message.content || {};
           const instanceId = message.item_hash;
@@ -218,6 +217,7 @@ export async function listInstances() {
               uptime: uptime,
           });
       }
+          */
 
         
         // Update Resource Usage and Billing Information
