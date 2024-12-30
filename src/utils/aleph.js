@@ -200,8 +200,6 @@ export async function listInstances() {
   } finally {
       // Ensure charts and spinners are cleared in case of errors
       isLoadingInstances = false;
-     // resetCharts();
-     // clearNodeGrid();
   }
 }
 

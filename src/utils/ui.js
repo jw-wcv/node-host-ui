@@ -2,17 +2,27 @@
 
 // Show wallet overlay
 export function showWalletOverlay() {
-  const overlay = document.getElementById('walletOverlay');
-  overlay.classList.add('visible');
-  document.body.classList.add('overlay-active'); // Lock the UI
+  const walletOverlay = document.getElementById('walletOverlay');
+  if (walletOverlay) {
+      walletOverlay.style.display = 'flex'; // Show the overlay
+      walletOverlay.classList.add('visible');
+  } else {
+      console.error('Wallet overlay element not found!');
+  }
 }
+
 
 // Hide wallet overlay
 export function hideWalletOverlay() {
-  const overlay = document.getElementById('walletOverlay');
-  overlay.classList.remove('visible');
-  document.body.classList.remove('overlay-active');
+  const walletOverlay = document.getElementById('walletOverlay');
+  if (walletOverlay) {
+      walletOverlay.style.display = 'none'; // Hide the overlay
+      walletOverlay.classList.remove('visible'); // Ensure 'visible' class is removed
+  } else {
+      console.error('Wallet overlay element not found!');
+  }
 }
+
 
 // Exporting the nodeGrid constant
 export const nodeGrid = document.getElementById('nodeGrid');
