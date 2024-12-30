@@ -44,8 +44,8 @@ export async function connectWallet() {
         connectWalletButton.onclick = disconnectWallet;
 
         // Fetch instances and load charts
-        await listInstances();
         hideWalletOverlay();
+        await listInstances();
     } catch (error) {
         console.error('Error connecting wallet:', error);
         showWalletOverlay();
