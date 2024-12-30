@@ -1,7 +1,8 @@
 import { AuthenticatedAlephHttpClient } from '@aleph-sdk/client';
 import { getAccountFromProvider } from '@aleph-sdk/ethereum';
 
-export let alephClient = null;
+export let alephClient = null; // Exported Aleph client
+export let account = null; // Exported account object
 
 export async function initializeAlephClient() {
     if (!window.ethereum) {
@@ -10,7 +11,7 @@ export async function initializeAlephClient() {
 
     // Request wallet connection
     await window.ethereum.request({ method: 'eth_requestAccounts' });
-    const account = await getAccountFromProvider(window.ethereum);
+    account = await getAccountFromProvider(window.ethereum);
 
     // Initialize Aleph client
     alephClient = new AuthenticatedAlephHttpClient(account);
@@ -22,6 +23,7 @@ export async function initializeAlephClient() {
 export function resetAlephClient() {
     alephClient = null;
     nodeGrid.innerHTML = '';
+    account = null;
 }
 
 

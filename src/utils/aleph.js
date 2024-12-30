@@ -1,4 +1,4 @@
-import { alephClient, initializeAlephClient } from './client.js'; // Centralized client management
+import { alephClient, initializeAlephClient, account } from './client.js'; // Centralized client management
 import { getSSHKeys, selectSSHKey } from './ssh.js'; // SSH key-related functions
 import { calculateUptime, aggregateResources, updatePowerDial, updateAvailableComputeChart, resetCharts, showPlaceholderCharts, updateCharts } from './metrics.js'; // Metrics utilities
 import { clearNodeGrid, showLoadingSpinner, nodeGrid  } from './ui.js'; // UI elements and helpers
@@ -71,7 +71,7 @@ async function listInstances() {
   }
 
   try {
-      const walletAddress = alephClient.account?.address;
+      const walletAddress = account.address;
       if (!walletAddress) {
           console.warn("Wallet address is undefined.");
           return;
