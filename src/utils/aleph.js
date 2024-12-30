@@ -130,35 +130,30 @@ export async function listInstances() {
 
 
       // Prepare nodes for rendering
-      const nodes = validInstances.map((message) => {
-        const { metadata, resources, time } = message.content || {};
-        const instanceId = message.item_hash;
+      const nodes = await Promise.all(
+        validInstances.map(async (message) => {
+            const { metadata, resources, time } = message.content || {};
+            const instanceId = message.item_hash;
     
-        // Log the instance ID and resources
-        console.log("Preparing node:", { instanceId, resources });
+            // Await the IPv6 resolution
+            const ipv6 = await fetchInstanceIp(instanceId);
+            const createdTime = new Date(time * 1000); // Convert UNIX time to Date
+            const uptime = calculateUptime(createdTime);
     
-        const ipv6 = fetchInstanceIp(instanceId); // Returns a Promise
-        const createdTime = new Date(time * 1000); // Convert UNIX time to Date
-        const uptime = calculateUptime(createdTime);
+            return {
+                id: instanceId,
+                name: metadata?.name || 'Unnamed',
+                ipv6: ipv6 || 'Unavailable',
+                status: message.confirmed ? 'Running' : 'Pending',
+                uptime,
+            };
+        })
+    );
     
-        // Log the node before returning
-        const node = {
-            id: instanceId,
-            name: metadata?.name || 'Unnamed',
-            ipv6: ipv6 || 'Unavailable',
-            status: message.confirmed ? 'Running' : 'Pending',
-            uptime,
-        };
-        console.log("Node prepared:", node);
-        return node;
-      });
-      
-      // Resolve all IPv6 fetches
-      const resolvedNodes = await Promise.all(nodes);
-      
-      // Log the resolved nodes
-      console.log("Resolved nodes:", resolvedNodes);
-      renderNodes(resolvedNodes);
+    // Log resolved nodes
+    console.log("Resolved nodes:", nodes);
+    renderNodes(nodes);
+    
     
 
       // Update Resource Usage and Billing Information
