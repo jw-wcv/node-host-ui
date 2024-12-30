@@ -230,42 +230,47 @@ export async function fetchInstanceIp(instanceId) {
  * Creates a new Aleph instance.
  */
 export async function createInstance() {
-    if (createNodeInProgress) return;
-    createNodeInProgress = true;
+  if (createNodeInProgress) return;
+  createNodeInProgress = true;
 
-    try {
-        const sshKeys = await getSSHKeys();
-        if (sshKeys.length === 0) {
-            alert('No SSH keys available. Please create one first.');
-            return;
-        }
+  try {
+      if (!alephClient) {
+          throw new Error("Aleph client is not initialized. Please connect your wallet first.");
+      }
 
-        selectSSHKey(sshKeys, async (selectedKey) => {
-            const label = prompt("Enter a label for your VM:", "AlephVM").trim();
-            if (!label) {
-                alert("Label is required to create a VM.");
-                return;
-            }
+      const sshKeys = await getSSHKeys();
+      if (sshKeys.length === 0) {
+          alert("No SSH keys available. Please create one first.");
+          return;
+      }
 
-            const instance = await alephClient.createInstance({
-                authorized_keys: [selectedKey.key],
-                resources: { vcpus: 1, memory: 2048, seconds: 3600 },
-                payment: { chain: "ETH", type: "hold" },
-                channel: alephChannel,
-                metadata: { name: label },
-                image: alephImage,
-            });
+      selectSSHKey(sshKeys, async (selectedKey) => {
+          const label = prompt("Enter a label for your VM:", "AlephVM").trim();
+          if (!label) {
+              alert("Label is required to create a VM.");
+              return;
+          }
 
-            alert(`Instance ${instance.item_hash} created successfully!`);
-            await listInstances();
-        });
-    } catch (error) {
-        console.error("Error creating instance:", error.message);
-        alert("Failed to create instance.");
-    } finally {
-        createNodeInProgress = false;
-    }
+          const instance = await alephClient.createInstance({
+              authorized_keys: [selectedKey.key],
+              resources: { vcpus: 1, memory: 2048, seconds: 3600 },
+              payment: { chain: "ETH", type: "hold" },
+              channel: alephChannel,
+              metadata: { name: label },
+              image: alephImage,
+          });
+
+          alert(`Instance ${instance.item_hash} created successfully!`);
+          await listInstances();
+      });
+  } catch (error) {
+      console.error("Error creating instance:", error.message);
+      alert("Failed to create instance.");
+  } finally {
+      createNodeInProgress = false;
+  }
 }
+
 
 /**
  * Deletes a specified Aleph instance.

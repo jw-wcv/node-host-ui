@@ -71,20 +71,30 @@ export async function getSSHKeys() {
             throw new Error("MetaMask not found. Please install it.");
         }
 
+        if (!alephClient) {
+            throw new Error("Aleph client is not initialized.");
+        }
+        if (!account) {
+            throw new Error("Account is not set. Please connect your wallet.");
+        }
+
+        console.log("Fetching SSH keys with account:", account.address);
+
         // Fetch POST messages of type ALEPH-SSH
         const response = await alephClient.getMessages({
-            types: ['POST'],
+            types: ["POST"],
             addresses: [account.address],
         });
 
         const sshKeys = response.messages
             .filter(
                 (msg) =>
-                    msg.content.type === 'POST' &&
-                    msg.content.content.type === 'ALEPH-SSH')
+                    msg.content.type === "POST" &&
+                    msg.content.content.type === "ALEPH-SSH"
+            )
             .map((msg) => ({
                 key: msg.content.content.content.key,
-                label: msg.content.content.content.label || 'Unnamed Key',
+                label: msg.content.content.content.label || "Unnamed Key",
                 time: msg.time,
             }));
 
@@ -96,6 +106,7 @@ export async function getSSHKeys() {
         return [];
     }
 }
+
 
 export function selectSSHKey(sshKeys, onSelect) {
     // Ensure sshKeys have valid content
