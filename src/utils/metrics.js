@@ -79,6 +79,16 @@ export function updateCharts(totalCores, totalMemory, totalCost, balance) {
     document.getElementById('totalMemory').textContent = `${(totalMemory / 1024).toFixed(2)} GB`;
 }
 
+export function resetCharts() {
+    if (powerDialChart) {
+        powerDialChart.destroy();
+        powerDialChart = null;
+    }
+    if (availableComputeChart) {
+        availableComputeChart.destroy();
+        availableComputeChart = null;
+    }
+}
 
 /**
  * Calculate the cost for a node based on resources.
