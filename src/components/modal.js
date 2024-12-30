@@ -73,10 +73,17 @@ export function createModal({
   // you might prefer to do the trimming before passing it in, or carefully parse.
   if (body) {
     const bodyDiv = document.createElement('div');
-    // If you want to shorten raw text only, do something like:
-    // bodyDiv.textContent = shortenMid(body, 60, 10, 10);
-    // But since you're using innerHTML, we'll do a minimal approach:
-    bodyDiv.innerHTML = shortenMid(body, 200, 50, 50);
+    
+    // Check for an instance ID pattern and shorten it
+    const instanceIdMatch = body.match(/([a-f0-9]{64})/);
+    
+    if (instanceIdMatch) {
+      const shortenedId = shortenMid(instanceIdMatch[1], 40, 12, 12);  // Keep more of the start/end for clarity
+      bodyDiv.innerHTML = body.replace(instanceIdMatch[1], shortenedId);
+    } else {
+      bodyDiv.innerHTML = shortenMid(body, 200, 50, 50);  // Generic body shortening if no ID found
+    }
+    
     modalContent.appendChild(bodyDiv);
   }
 
