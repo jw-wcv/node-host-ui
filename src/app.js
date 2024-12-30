@@ -1,6 +1,6 @@
 // Import modules
 import { connectWallet, disconnectWallet } from './utils/wallet.js';
-import { listInstances, createInstance, deleteNode, configureNode, pingNode } from './utils/aleph.js';
+import { createInstance, deleteNode, configureNode, pingNode } from './utils/aleph.js';
 import { createSSHKey } from './utils/ssh.js';
 import { showWalletOverlay, hideWalletOverlay } from './utils/ui.js';
 import './styles.css';

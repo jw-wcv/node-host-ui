@@ -64,7 +64,7 @@ export function filterValidNodes(messages) {
 /**
  * Lists Aleph instances linked to the connected wallet.
  */
-async function listInstances() {
+export async function listInstances() {
   if (!alephClient) {
       console.error("Aleph client not initialized.");
       return;
