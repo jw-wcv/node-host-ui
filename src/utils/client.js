@@ -21,8 +21,6 @@ export async function initializeAlephClient() {
     alephClient = new AuthenticatedAlephHttpClient(account);
     console.log("Aleph client initialized with account:", account.address);
 
-    hideWalletOverlay();
-
     return alephClient;
 }
 

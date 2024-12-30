@@ -236,6 +236,8 @@ export async function createInstance() {
           throw new Error("Aleph client is not initialized. Please connect your wallet first.");
       }
 
+      console.log('Creating Instance');
+
       const sshKeys = await getSSHKeys();
       if (sshKeys.length === 0) {
           alert("No SSH keys available. Please create one first.");

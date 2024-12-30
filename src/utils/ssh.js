@@ -10,6 +10,8 @@ export async function createSSHKey() {
             throw new Error("MetaMask not found. Please install it.");
         }
 
+        console.log('Creating SSH Key');
+
         // Generate RSA key pair
         let keyPair = forge.pki.rsa.generateKeyPair({ bits: 4096 });
         let privateKeyPem = forge.pki.privateKeyToPem(keyPair.privateKey);
