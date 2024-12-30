@@ -77,13 +77,19 @@ export async function listInstances() {
           return;
       }
 
+      // Show placeholders and spinners while data loads
+      showLoadingSpinner(3); // Show temporary loading cards
+      showPlaceholderCharts(); // Show placeholder charts
+
       // Fetch INSTANCE and FORGET messages
       const response = await alephClient.getMessages({
           types: ['INSTANCE', 'FORGET'],
           addresses: [walletAddress],
       });
 
-      nodeGrid.innerHTML = '';
+      // Clear placeholders after fetching data
+      clearNodeGrid();
+      resetCharts();
 
       if (!response.messages || response.messages.length === 0) {
           nodeGrid.innerHTML = '<p>No instances found for this wallet.</p>';
@@ -103,11 +109,15 @@ export async function listInstances() {
           validInstances.map((msg) => msg.content || {})
       );
 
+      console.log("Valid instances:", validInstances);
+      console.log("Instance resources:", validInstances.map((msg) => msg.content.resources));
+
+
       // Prepare nodes for rendering
       const nodes = validInstances.map((message) => {
           const { metadata, resources, time } = message.content || {};
           const instanceId = message.item_hash;
-          const ipv6 = fetchInstanceIp(instanceId);
+          const ipv6 = fetchInstanceIp(instanceId); // Returns a Promise
           const createdTime = new Date(time * 1000); // Convert UNIX time to Date
           const uptime = calculateUptime(createdTime);
 
@@ -120,8 +130,8 @@ export async function listInstances() {
           };
       });
 
-      // Render all nodes using `renderNodes`
-      const resolvedNodes = await Promise.all(nodes); // Resolve all promises for IPv6
+      // Resolve all IPv6 fetches and render nodes
+      const resolvedNodes = await Promise.all(nodes);
       renderNodes(resolvedNodes);
 
       // Update Resource Usage and Billing Information
@@ -135,11 +145,17 @@ export async function listInstances() {
       const balance = balanceMatch ? parseFloat(balanceMatch[1]) : 0;
       updatePowerDial(balance);
       updateAvailableComputeChart(totalCores, balance);
+
   } catch (error) {
       console.error("Error fetching instances:", error.message);
       nodeGrid.innerHTML = '<p>Error loading instances. Please refresh or try again later.</p>';
+  } finally {
+      // Ensure charts and spinners are cleared in case of errors
+      resetCharts();
+      clearNodeGrid();
   }
 }
+
 
 
 

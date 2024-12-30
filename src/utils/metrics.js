@@ -88,15 +88,18 @@ export function aggregateResources(instances) {
     let totalCost = 0;
 
     instances.forEach(({ resources }) => {
-        if (resources) {
+        if (resources && typeof resources.vcpus !== 'undefined' && typeof resources.memory !== 'undefined') {
             totalCores += resources.vcpus || 0;
             totalMemory += resources.memory || 0;
             totalCost += calculateNodeCost(resources);
+        } else {
+            console.warn("Invalid instance resources:", resources);
         }
     });
 
     return { totalCores, totalMemory, totalCost };
 }
+
 
 export function calculateUptime(createdTime) {
     const now = new Date();
