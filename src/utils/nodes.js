@@ -1,40 +1,63 @@
 // nodes.js
 
+import { createModal, removeModal } from "../components/modal";
+
 export async function configureNode(ipv6, nodeId) {
-    try {
-        const privateKey = await requestPrivateKey();
-        if (!privateKey) {
-            alert("Private key is required to configure the node.");
-            return;
-        }
-
-        const gitRepo = prompt("Enter the Git repository URL to clone:");
-        if (!gitRepo) {
-            alert("Git repository URL is required.");
-            return;
-        }
-
-        const response = await fetch('/configure-node', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ipv6, privateKey, gitRepo }),
-        });
-
-        if (!response.ok) {
-            const error = await response.json();
-            console.error('Error configuring the node:', error);
-            alert('Failed to configure the node. Check the console for details.');
-            return;
-        }
-
-        const result = await response.json();
-        console.log('Node configured successfully:', result);
-        alert(`Configuration process initiated for node: ${nodeId}. Check the logs.`);
-    } catch (error) {
-        console.error('Error configuring the node:', error.message);
-        alert('An error occurred while configuring the node. Please try again.');
+  try {
+    // 1) Prompt user for Private Key
+    const privateKey = await requestPrivateKey();
+    if (!privateKey) {
+      alert("Private key is required to configure the node.");
+      return;
     }
+
+    // 2) Prompt user for Git Repository URL
+    const gitRepo = prompt("Enter the Git repository URL to clone:");
+    if (!gitRepo) {
+      alert("Git repository URL is required.");
+      return;
+    }
+
+    // 3) Show a spinner while we send the request
+    const spinnerModal = createModal({
+      title: 'Configuring Node',
+      body: `<p>Applying configuration for node <strong>${nodeId}</strong>. This may take a few moments...</p>`,
+      showSpinner: true
+    });
+
+    try {
+      // 4) Send request to configure-node endpoint
+      const response = await fetch('/configure-node', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ipv6, privateKey, gitRepo }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        console.error('Error configuring the node:', error);
+        alert('Failed to configure the node. Check the console for details.');
+        return;
+      }
+
+      const result = await response.json();
+      console.log('Node configured successfully:', result);
+      alert(`Configuration process initiated for node: ${nodeId}. Check the logs.`);
+    } catch (error) {
+      console.error('Error configuring the node:', error.message);
+      alert('An error occurred while configuring the node. Please try again.');
+    } finally {
+      // 5) Always remove the spinner modal, success or fail
+      removeModal(spinnerModal);
+    }
+
+  } catch (error) {
+    // If something unexpected happened outside the normal flow
+    console.error('Error configuring the node (unexpected):', error.message);
+    alert('An unexpected error occurred. Please try again.');
+  }
 }
+
 
 export async function pingNode(ipv6, button) {
     if (!ipv6 || ipv6 === 'Unavailable') {
