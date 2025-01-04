@@ -79,7 +79,7 @@ npm run build || { echo "Failed to build the project. Exiting."; exit 1; }
 
 # Start the Node.js server using PM2
 echo "Starting the Node.js server using PM2..."
-pm2 start server.js --name "$PM2_APP_NAME" || { echo "Failed to start server using PM2. Exiting."; exit 1; }
+pm2 start server.js --name "$PM2_APP_NAME" --interpreter $(which node) || { echo "Failed to start server using PM2. Exiting."; exit 1; }
 
 # Configure PM2 to start on system reboot
 echo "Configuring PM2 to restart the server on system reboot..."

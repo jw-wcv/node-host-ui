@@ -9,8 +9,7 @@ import {
   import { createInstance, deleteNode } from './utils/aleph.js';
   import { pingNode, configureNode } from './utils/nodes.js';
   import { createSSHKey } from './utils/ssh.js';
-  import { showWalletOverlay } from './utils/ui.js';
-  import { nodeGrid } from './utils/ui.js';
+  import { showWalletOverlay, nodeGrid } from './utils/ui.js';
   import './styles.css';
   
   // UI elements
