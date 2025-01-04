@@ -1,7 +1,14 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const { Client } = require('ssh2');
+// const { Client } = require('ssh2');
+
+try {
+  const { Client } = require('ssh2');
+  console.log('ssh2 module loaded successfully');
+} catch (err) {
+  console.error('Failed to load ssh2:', err);
+}
 
 // Constants
 const PUBLIC_DIR = path.join(__dirname, 'dist'); // Points to the dist directory
