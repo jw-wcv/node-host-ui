@@ -27,6 +27,7 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './src/index.html', // Use your source index.html
       filename: 'index.html', // Output to dist/index.html
+      favicon: './src/public/favicon.ico',  // Points to favicon in src
       inject: 'body', // Ensure scripts are loaded in the body
     }),
     new webpack.ProvidePlugin({
