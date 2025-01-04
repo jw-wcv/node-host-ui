@@ -141,21 +141,4 @@ nodeGrid.addEventListener('click', async (event) => {
     }
   });
   
-  // Node actions (event delegation)
-  /*
-  nodeGrid.addEventListener('click', async (event) => {
-    const button = event.target;
-    const card = button.closest('.card');
-    const nodeId = card?.getAttribute('data-id');
-    const ipv6 = card?.querySelector('p').textContent.split(': ')[1];
-  
-    if (button.classList.contains('delete-button')) {
-      await deleteNode(nodeId);
-    } else if (button.classList.contains('ping-button')) {
-      await pingNode(ipv6, button);
-    } else if (button.classList.contains('configure-button')) {
-      await configureNode(ipv6, nodeId);
-    }
-  });
-  */
   
